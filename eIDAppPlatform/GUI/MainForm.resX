@@ -17,20 +17,21 @@
     <resheader name="version">2.0</resheader>
     <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
     <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1">this is my long string</data>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
     <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        [base64 mime encoded serialized CLR Framework object]
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
     </data>
     <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        [base64 mime encoded string representing a byte array form of the CLR Framework object]
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
     </data>
                 
     There are any number of "resheader" rows that contain simple 
     name/value pairs.
     
     Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a CLR class that support 
+    type or mimetype. Type corresponds to a .NET class that support 
     text/value conversion through the TypeConverter architecture. 
     Classes that don't support this are serialized and stored with the 
     mimetype set.
@@ -45,7 +46,7 @@
     
     mimetype: application/x-microsoft.net.object.binary.base64
     value   : The object must be serialized with 
-            : System.Serialization.Formatters.Binary.BinaryFormatter
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
     
     mimetype: application/x-microsoft.net.object.soap.base64
@@ -59,6 +60,7 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
@@ -67,9 +69,16 @@
               <xsd:sequence>
                 <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="name" use="required" type="xsd:string" />
               <xsd:attribute name="type" type="xsd:string" />
               <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
@@ -78,9 +87,10 @@
                 <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
                 <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
               <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
               <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
@@ -107,4 +117,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AADPz89M1tbW4tfX1/jX19f419fX+NfX1/jX19f419fX+NfX1/jX19f419fX+NfX1/jX19f419fX+NbW
+        1uLPz89M19fX4tvb2//b29v/29vb/9ra2v/W1tb/1dXV/9bW1f/V1tb/1dXW/9bW1//b29v/29vb/9vb
+        2//b29v/19fX4tra2vjd3d3/3d3d/9nZ2f/Mvbb/uJJ8/7KEZP+3j3b/kaay/2e26P+Cveb/wNDa/9nZ
+        2P/d3d3/3d3d/9ra2vjc3Nz439/f/9fT0v+qdVX/kEAC/5JEAP+SRAD/kkQA/5RCAf93V0D/E5Lc/wWW
+        8/9rten/2NnY/9/f3//c3Nz43t7e+Nzc2/+gYTr/kkQA/5JEAP+SRAD/kkQA/5JEAP+SRAD/kUQA/4ZM
+        Jf8NlOP/AJfz/1mv6//e3dv/3t7e+N7e3vi9m4v/k0UA/5JEAP+TRQD/k0UA/5NFAP+SRAD/kUMA/5JE
+        AP+SRAD/W2pv/wCY8/8Al/T/qcvi/9/f3/je39/4soFt/7ONgv+WaVH/pW9T/5ZlVP+7lor/r4d5/45S
+        Lv+SUSn/qGtH/52Dfv88m9n/SpTJ/4ikwP/g4N/43Nva+OjZzf+6o6D/vqmi/7GMff+6p6j/7NzS/8Gj
+        mP/q39z/lmpU/76Rev+jg3n/VaDX/7HA0f+vwM//4+Lg+N/g4Pi6inn/wbCq/+XWz/+lbVT/3NXW/8qt
+        pP/Drab/6dzZ/7OHdP+SQwH/oVQi/w6V5f8WnfP/R6vw/+Xi4Pjl5ub4pmxH/5NGD/+SRAv/lUoQ/8GY
+        hP+kb1H/w5iB/650UP+RQwT/kkMA/4JOJv8AmvX/AJjy/2m06P/n5+b47e3t+Mu1rP+QQAH/kkQA/5JE
+        AP+SRQD/kkQA/5JFAP+SRAD/kkQA/5NDAP9DdZP/AJfy/weW8//I2eL/7u7u+PDw8Pjv7+//s4du/5BB
+        AP+SRAD/kkQA/5JEAP+SRAD/kkQA/5JDAP9tXFL/A5jv/wKW8/+NwuT/8fHw//Dw8Pjy8vL4+Pj4/+/v
+        7//CpJT/l1Ae/5BAAP+RQgD/kEAA/4pGFv9PboP/BJfx/yqg8P+py+P/8vHw//j4+P/y8vL49PT0+Pr6
+        +v/6+vr/9/f3/+vr6f/Vx7//ybKm/9LCuf+10d//p8vl/8bZ5f/s7ev/+fn5//r6+v/6+vr/9PT0+PPz
+        8+L8/Pz//Pz8//z8/P/8/Pz//f39//39/f/9/f3//f39//39/f/9/f3//Pz8//z8/P/8/Pz//Pz8//Pz
+        8+Li4uJM9PT04vb29vj29vb49vb2+Pb29vj29vb49vb2+Pb29vj29vb49vb2+Pb29vj29vb49vb2+PT0
+        9OLi4uJMgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAgAEAAA==
+</value>
+  </data>
 </root>
