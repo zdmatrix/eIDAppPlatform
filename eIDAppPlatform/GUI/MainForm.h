@@ -11,7 +11,7 @@ namespace GUI {
 	using namespace System::Drawing;
 
 	/// <summary>
-	/// Form1 摘要
+	/// MainForm 摘要
 	///
 	/// 警告: 如果更改此类的名称，则需要更改
 	///          与此类所依赖的所有 .resx 文件关联的托管资源编译器工具的
@@ -19,10 +19,10 @@ namespace GUI {
 	///          设计器将不能与此窗体的关联
 	///          本地化资源正确交互。
 	/// </summary>
-	public ref class Form1 : public System::Windows::Forms::Form
+	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public:
-		Form1(void)
+		MainForm(void)
 		{
 			InitializeComponent();
 			//
@@ -34,7 +34,7 @@ namespace GUI {
 		/// <summary>
 		/// 清理所有正在使用的资源。
 		/// </summary>
-		~Form1()
+		~MainForm()
 		{
 			if (components)
 			{
@@ -127,7 +127,7 @@ namespace GUI {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(Form1::typeid));
+			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(MainForm::typeid));
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
@@ -726,14 +726,14 @@ namespace GUI {
 			this->label12->Text = L"认证数据";
 			this->label12->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
-			// Form1
+			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(711, 484);
 			this->Controls->Add(this->splitContainer1);
 			this->Icon = (cli::safe_cast<System::Drawing::Icon^  >(resources->GetObject(L"$this.Icon")));
-			this->Name = L"Form1";
+			this->Name = L"MainForm";
 			this->Text = L"eID应用平台";
 			this->splitContainer1->Panel1->ResumeLayout(false);
 			this->splitContainer1->Panel1->PerformLayout();
