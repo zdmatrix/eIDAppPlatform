@@ -1,5 +1,6 @@
 #pragma once
 
+#using <J:\work\Code\c++\project\eIDAppPlatform\branches\zdmatrix\eIDAppPlatform\debug\FunctionModule.dll>
 
 namespace GUI {
 
@@ -9,6 +10,8 @@ namespace GUI {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+
+	using namespace FunctionModule;
 
 	/// <summary>
 	/// MainForm 摘要
@@ -22,12 +25,17 @@ namespace GUI {
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public:
+
+		ReaderDriver^ rd;
+
 		MainForm(void)
 		{
 			InitializeComponent();
 			//
 			//TODO: 在此处添加构造函数代码
 			//
+
+			rd = gcnew ReaderDriver;
 		}
 
 	protected:

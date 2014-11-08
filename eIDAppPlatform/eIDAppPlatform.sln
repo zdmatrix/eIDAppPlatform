@@ -2,6 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GUI", "GUI\GUI.vcproj", "{6582174B-99C1-4CC6-A622-70DD51CDDFB1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AB865A0B-0AD7-4756-BA03-A7F98549F2B6} = {AB865A0B-0AD7-4756-BA03-A7F98549F2B6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FunctionModule", "FunctionModule\FunctionModule.vcproj", "{AB865A0B-0AD7-4756-BA03-A7F98549F2B6}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -17,6 +22,10 @@ Global
 		{6582174B-99C1-4CC6-A622-70DD51CDDFB1}.Debug|Win32.Build.0 = Debug|Win32
 		{6582174B-99C1-4CC6-A622-70DD51CDDFB1}.Release|Win32.ActiveCfg = Release|Win32
 		{6582174B-99C1-4CC6-A622-70DD51CDDFB1}.Release|Win32.Build.0 = Release|Win32
+		{AB865A0B-0AD7-4756-BA03-A7F98549F2B6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AB865A0B-0AD7-4756-BA03-A7F98549F2B6}.Debug|Win32.Build.0 = Debug|Win32
+		{AB865A0B-0AD7-4756-BA03-A7F98549F2B6}.Release|Win32.ActiveCfg = Release|Win32
+		{AB865A0B-0AD7-4756-BA03-A7F98549F2B6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
