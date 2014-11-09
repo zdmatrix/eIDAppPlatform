@@ -204,6 +204,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReaderInterface.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -238,6 +242,10 @@
 					SubType="Designer"
 					>
 				</File>
+			</File>
+			<File
+				RelativePath=".\ReaderInterface.h"
+				>
 			</File>
 			<File
 				RelativePath=".\resource.h"

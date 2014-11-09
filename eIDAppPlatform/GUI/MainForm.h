@@ -1,6 +1,6 @@
 #pragma once
 
-#using <J:\work\Code\c++\project\eIDAppPlatform\branches\zdmatrix\eIDAppPlatform\debug\FunctionModule.dll>
+#include "ReaderInterface.h"
 
 namespace GUI {
 
@@ -10,6 +10,8 @@ namespace GUI {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+
+	using namespace System::Security::Permissions;
 
 	using namespace FunctionModule;
 
@@ -26,7 +28,16 @@ namespace GUI {
 	{
 	public:
 
-		ReaderDriver^ rd;
+		const static Int64 DBT_DEVICEREMOVECOMPLETE = 0x8004;   
+		const static Int64 DBT_DEVICEARRIVAL = 0x8000;   
+		const static Int64 DBT_DEVNODES_CHANGED = 0x0007;
+
+		bool bDeviceChanged;
+		bool bGetReaderList;
+
+		long lRet;
+
+		ReaderInterface^ ri;
 
 		MainForm(void)
 		{
@@ -35,7 +46,10 @@ namespace GUI {
 			//TODO: 在此处添加构造函数代码
 			//
 
-			rd = gcnew ReaderDriver;
+			bDeviceChanged = false;
+			bGetReaderList = false;
+
+			ri = gcnew ReaderInterface;
 		}
 
 	protected:
@@ -113,7 +127,33 @@ namespace GUI {
 
 
 
+	protected: 
 
+		[SecurityPermission(SecurityAction::Demand, Flags=SecurityPermissionFlag::UnmanagedCode)]
+		virtual void WndProc( Message% m ) override
+		{
+
+			// Listen for operating system messages.
+			switch ( m.Msg )
+			{
+			case WM_DEVICECHANGE:
+
+				switch (safe_cast<int>(m.WParam)){
+					case DBT_DEVNODES_CHANGED:
+						bDeviceChanged = true;
+						break;
+					default:
+						break;
+				}
+
+				// The WParam value identifies what is occurring.
+
+				// Invalidate to get new text painted.
+				this->Invalidate();
+				break;
+			}
+			Form::WndProc( m );
+		}
 
 
 
@@ -137,8 +177,6 @@ namespace GUI {
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(MainForm::typeid));
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
-			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
-			this->btnBanlance = (gcnew System::Windows::Forms::Button());
 			this->btnCloseDevice = (gcnew System::Windows::Forms::Button());
 			this->btnOpenDevice = (gcnew System::Windows::Forms::Button());
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
@@ -183,7 +221,9 @@ namespace GUI {
 			this->btnAuth = (gcnew System::Windows::Forms::Button());
 			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
 			this->btnBeAuthData = (gcnew System::Windows::Forms::Button());
+			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
 			this->textBoxShow = (gcnew System::Windows::Forms::TextBox());
+			this->btnBanlance = (gcnew System::Windows::Forms::Button());
 			this->splitContainer1->Panel1->SuspendLayout();
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
@@ -228,24 +268,6 @@ namespace GUI {
 			this->splitContainer1->SplitterDistance = 40;
 			this->splitContainer1->TabIndex = 0;
 			// 
-			// textBoxBanlance
-			// 
-			this->textBoxBanlance->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->textBoxBanlance->Location = System::Drawing::Point(124, 8);
-			this->textBoxBanlance->Name = L"textBoxBanlance";
-			this->textBoxBanlance->ReadOnly = true;
-			this->textBoxBanlance->Size = System::Drawing::Size(101, 21);
-			this->textBoxBanlance->TabIndex = 5;
-			// 
-			// btnBanlance
-			// 
-			this->btnBanlance->Location = System::Drawing::Point(24, 8);
-			this->btnBanlance->Name = L"btnBanlance";
-			this->btnBanlance->Size = System::Drawing::Size(75, 23);
-			this->btnBanlance->TabIndex = 4;
-			this->btnBanlance->Text = L"卡余额";
-			this->btnBanlance->UseVisualStyleBackColor = true;
-			// 
 			// btnCloseDevice
 			// 
 			this->btnCloseDevice->Location = System::Drawing::Point(624, 8);
@@ -271,6 +293,7 @@ namespace GUI {
 			this->comboBox1->Name = L"comboBox1";
 			this->comboBox1->Size = System::Drawing::Size(437, 22);
 			this->comboBox1->TabIndex = 1;
+			this->comboBox1->Click += gcnew System::EventHandler(this, &MainForm::comboBox1_Click);
 			// 
 			// label1
 			// 
@@ -724,6 +747,15 @@ namespace GUI {
 			this->btnBeAuthData->Text = L"生成待认证数据";
 			this->btnBeAuthData->UseVisualStyleBackColor = true;
 			// 
+			// textBoxBanlance
+			// 
+			this->textBoxBanlance->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->textBoxBanlance->Location = System::Drawing::Point(124, 8);
+			this->textBoxBanlance->Name = L"textBoxBanlance";
+			this->textBoxBanlance->ReadOnly = true;
+			this->textBoxBanlance->Size = System::Drawing::Size(101, 21);
+			this->textBoxBanlance->TabIndex = 5;
+			// 
 			// textBoxShow
 			// 
 			this->textBoxShow->Location = System::Drawing::Point(4, 37);
@@ -734,6 +766,15 @@ namespace GUI {
 			this->textBoxShow->Size = System::Drawing::Size(260, 399);
 			this->textBoxShow->TabIndex = 0;
 			// 
+			// btnBanlance
+			// 
+			this->btnBanlance->Location = System::Drawing::Point(24, 8);
+			this->btnBanlance->Name = L"btnBanlance";
+			this->btnBanlance->Size = System::Drawing::Size(75, 23);
+			this->btnBanlance->TabIndex = 4;
+			this->btnBanlance->Text = L"卡余额";
+			this->btnBanlance->UseVisualStyleBackColor = true;
+			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
@@ -743,6 +784,7 @@ namespace GUI {
 			this->Icon = (cli::safe_cast<System::Drawing::Icon^  >(resources->GetObject(L"$this.Icon")));
 			this->Name = L"MainForm";
 			this->Text = L"eID应用平台";
+			this->Load += gcnew System::EventHandler(this, &MainForm::MainForm_Load);
 			this->splitContainer1->Panel1->ResumeLayout(false);
 			this->splitContainer1->Panel1->PerformLayout();
 			this->splitContainer1->Panel2->ResumeLayout(false);
@@ -770,6 +812,31 @@ namespace GUI {
 
 		}
 #pragma endregion
-	};
+
+private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^  e) {
+			 bGetReaderList = false;
+			 bDeviceChanged = false;
+		}
+
+private: System::Void comboBox1_Click(System::Object^  sender, System::EventArgs^  e) {
+			 if(bDeviceChanged){
+				 if(!bGetReaderList){
+					 lRet = ri->GetReaderList();
+					 if(lRet != SCARD_S_SUCCESS){
+						 bDeviceChanged = false;
+						 bGetReaderList = false;
+						 return;
+					 }
+					 for(int i = 0; i < ri->nReaderCounter; i ++){
+						this->comboBox1->Items->Add(ri->strReaderList[i]);
+					 }
+					 bGetReaderList = true;
+					 bDeviceChanged = false;
+				 }else{
+					 this->comboBox1->Items->Clear();
+				 }
+			 }
+		 }
+};
 }
 
