@@ -7,11 +7,9 @@ using namespace FunctionModule;
 
 public ref class ReaderInterface{
 public:
-	const static int MAX_READER = 64;
-	int nReaderCounter;
-
+	static const int MAX_READER = 0x40;
 	array<String^>^ strReaderList;
+	int nReaderCounter;
 public:
 	long GetReaderList();
-
 };

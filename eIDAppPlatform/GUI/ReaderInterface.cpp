@@ -4,23 +4,20 @@
 long lRet;
 
 long ReaderInterface::GetReaderList(){
-	
-	ReaderDriver^ rd = gcnew ReaderDriver;
 
+	int offset = 0;
 	nReaderCounter = 0;
-	
+	strReaderList = gcnew array<String^>(MAX_READER);
+	ReaderDriver^ rd = gcnew ReaderDriver;
 	lRet = rd->getReaderList();
 	if(lRet != SCARD_S_SUCCESS){
 		return lRet;
 	}
-
-	cli::pin_ptr<char> pch = &(rd->cReaderList[0]);
-	strReaderList = gcnew array<String^>(MAX_READER);
-	for(int i = 0; i < MAX_READER && *pch != '\0'; i ++){
-		strReaderList[i] = String(pch).ToString();
-		pch += (strReaderList[i]->Length + 1);
+	cli::pin_ptr<char> pchReaderList = &(rd->cReaderList[0]);
+	for(int i = 0; pchReaderList[offset] != '\0'; i ++){
+		strReaderList[i] = String(pchReaderList + offset).ToString();
+		offset += (strReaderList[i]->Length + 1);
 		nReaderCounter ++;
 	}
-	
 	return lRet;
 }

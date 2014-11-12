@@ -21,12 +21,15 @@ namespace FunctionModule {
 
 		DWORD dwReaderLength;
 
+		array<char>^ cReaderList;
+
 
 	public:
 
 		long getReaderList(){
 
 			dwReaderLength = 0;
+
 			cli::pin_ptr<SCARDCONTEXT> lphContextHandle = &hContextHandle;
 			cli::pin_ptr<DWORD> lpdwReaderLength = &dwReaderLength; 
 			
@@ -37,6 +40,13 @@ namespace FunctionModule {
 			}
 
 			lRet = SCardListReaders(hContextHandle, SCARD_ALL_READERS, NULL, lpdwReaderLength);
+			if(lRet != SCARD_S_SUCCESS){
+				return lRet;
+			}
+
+			cReaderList = gcnew array<char>(dwReaderLength);
+			cli::pin_ptr<char> pcReaderList = &cReaderList[0];
+			lRet = SCardListReaders(hContextHandle, SCARD_ALL_READERS, (LPTSTR)pcReaderList, lpdwReaderLength);
 			if(lRet != SCARD_S_SUCCESS){
 				return lRet;
 			}
