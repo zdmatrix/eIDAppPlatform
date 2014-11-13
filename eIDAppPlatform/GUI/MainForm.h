@@ -32,11 +32,19 @@ namespace GUI {
 		const static Int64 DBT_DEVICEARRIVAL = 0x8000;   
 		const static Int64 DBT_DEVNODES_CHANGED = 0x0007;
 
+		const static bool ENABLE_ALL_BUTTON = true;
+		const static bool DISABLE_ALL_BUTTON = false;
+
 		bool bDeviceChanged;
 		bool bGetReaderList;
 
 		long lRet;
-	private: System::Windows::Forms::Label^  label13;
+
+		String^ strSelectedReader;
+	private: System::Windows::Forms::TextBox^  textBoxBanlance;
+	public: 
+	private: System::Windows::Forms::Button^  btnBanlance;
+
 	public: 
 
 		ReaderInterface^ ri;
@@ -51,7 +59,11 @@ namespace GUI {
 			bDeviceChanged = false;
 			bGetReaderList = false;
 
+			strSelectedReader = nullptr;
+
 			ri = gcnew ReaderInterface;
+
+
 		}
 
 	protected:
@@ -70,8 +82,8 @@ namespace GUI {
 	private: System::Windows::Forms::Button^  btnOpenDevice;
 	private: System::Windows::Forms::ComboBox^  comboBox1;
 	private: System::Windows::Forms::Button^  btnCloseDevice;
-	private: System::Windows::Forms::Button^  btnBanlance;
-	private: System::Windows::Forms::TextBox^  textBoxBanlance;
+
+
 	private: System::Windows::Forms::SplitContainer^  splitContainer2;
 	private: System::Windows::Forms::TabControl^  tabControl1;
 	private: System::Windows::Forms::TabPage^  tabPageTest;
@@ -127,7 +139,7 @@ namespace GUI {
 	private: System::Windows::Forms::Label^  label12;
 	private: System::Windows::Forms::TextBox^  textBox2;
 
-
+	private: System::Windows::Forms::Label^  label13;
 
 	protected: 
 
@@ -223,10 +235,10 @@ namespace GUI {
 			this->btnAuth = (gcnew System::Windows::Forms::Button());
 			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
 			this->btnBeAuthData = (gcnew System::Windows::Forms::Button());
-			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
-			this->textBoxShow = (gcnew System::Windows::Forms::TextBox());
-			this->btnBanlance = (gcnew System::Windows::Forms::Button());
 			this->label13 = (gcnew System::Windows::Forms::Label());
+			this->textBoxShow = (gcnew System::Windows::Forms::TextBox());
+			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
+			this->btnBanlance = (gcnew System::Windows::Forms::Button());
 			this->splitContainer1->Panel1->SuspendLayout();
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
@@ -288,6 +300,7 @@ namespace GUI {
 			this->btnOpenDevice->TabIndex = 2;
 			this->btnOpenDevice->Text = L"打开设备";
 			this->btnOpenDevice->UseVisualStyleBackColor = true;
+			this->btnOpenDevice->Click += gcnew System::EventHandler(this, &MainForm::btnOpenDevice_Click);
 			// 
 			// comboBox1
 			// 
@@ -296,6 +309,7 @@ namespace GUI {
 			this->comboBox1->Name = L"comboBox1";
 			this->comboBox1->Size = System::Drawing::Size(437, 22);
 			this->comboBox1->TabIndex = 1;
+			this->comboBox1->SelectedIndexChanged += gcnew System::EventHandler(this, &MainForm::comboBox1_SelectedIndexChanged);
 			this->comboBox1->Click += gcnew System::EventHandler(this, &MainForm::comboBox1_Click);
 			// 
 			// label1
@@ -315,14 +329,14 @@ namespace GUI {
 			// 
 			// splitContainer2.Panel1
 			// 
+			this->splitContainer2->Panel1->Controls->Add(this->textBoxBanlance);
+			this->splitContainer2->Panel1->Controls->Add(this->btnBanlance);
 			this->splitContainer2->Panel1->Controls->Add(this->tabControl1);
 			// 
 			// splitContainer2.Panel2
 			// 
 			this->splitContainer2->Panel2->Controls->Add(this->label13);
-			this->splitContainer2->Panel2->Controls->Add(this->textBoxBanlance);
 			this->splitContainer2->Panel2->Controls->Add(this->textBoxShow);
-			this->splitContainer2->Panel2->Controls->Add(this->btnBanlance);
 			this->splitContainer2->Panel2->Font = (gcnew System::Drawing::Font(L"宋体", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(134)));
 			this->splitContainer2->Size = System::Drawing::Size(711, 440);
@@ -340,7 +354,7 @@ namespace GUI {
 			this->tabControl1->Location = System::Drawing::Point(3, 3);
 			this->tabControl1->Name = L"tabControl1";
 			this->tabControl1->SelectedIndex = 0;
-			this->tabControl1->Size = System::Drawing::Size(434, 437);
+			this->tabControl1->Size = System::Drawing::Size(434, 379);
 			this->tabControl1->SizeMode = System::Windows::Forms::TabSizeMode::Fixed;
 			this->tabControl1->TabIndex = 0;
 			// 
@@ -351,7 +365,7 @@ namespace GUI {
 			this->tabPageTest->Location = System::Drawing::Point(4, 34);
 			this->tabPageTest->Name = L"tabPageTest";
 			this->tabPageTest->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageTest->Size = System::Drawing::Size(426, 399);
+			this->tabPageTest->Size = System::Drawing::Size(426, 341);
 			this->tabPageTest->TabIndex = 0;
 			this->tabPageTest->Text = L"卡测试";
 			this->tabPageTest->UseVisualStyleBackColor = true;
@@ -751,44 +765,44 @@ namespace GUI {
 			this->btnBeAuthData->Text = L"生成待认证数据";
 			this->btnBeAuthData->UseVisualStyleBackColor = true;
 			// 
-			// textBoxBanlance
-			// 
-			this->textBoxBanlance->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->textBoxBanlance->Location = System::Drawing::Point(124, 8);
-			this->textBoxBanlance->Name = L"textBoxBanlance";
-			this->textBoxBanlance->ReadOnly = true;
-			this->textBoxBanlance->Size = System::Drawing::Size(101, 21);
-			this->textBoxBanlance->TabIndex = 5;
-			// 
-			// textBoxShow
-			// 
-			this->textBoxShow->Location = System::Drawing::Point(4, 80);
-			this->textBoxShow->Multiline = true;
-			this->textBoxShow->Name = L"textBoxShow";
-			this->textBoxShow->ReadOnly = true;
-			this->textBoxShow->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-			this->textBoxShow->Size = System::Drawing::Size(260, 356);
-			this->textBoxShow->TabIndex = 0;
-			// 
-			// btnBanlance
-			// 
-			this->btnBanlance->Location = System::Drawing::Point(24, 8);
-			this->btnBanlance->Name = L"btnBanlance";
-			this->btnBanlance->Size = System::Drawing::Size(75, 23);
-			this->btnBanlance->TabIndex = 4;
-			this->btnBanlance->Text = L"卡余额";
-			this->btnBanlance->UseVisualStyleBackColor = true;
-			// 
 			// label13
 			// 
 			this->label13->AutoSize = true;
 			this->label13->Font = (gcnew System::Drawing::Font(L"宋体", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(134)));
-			this->label13->Location = System::Drawing::Point(97, 49);
+			this->label13->Location = System::Drawing::Point(96, 11);
 			this->label13->Name = L"label13";
 			this->label13->Size = System::Drawing::Size(72, 16);
 			this->label13->TabIndex = 6;
 			this->label13->Text = L"状态输出";
+			// 
+			// textBoxShow
+			// 
+			this->textBoxShow->Location = System::Drawing::Point(4, 37);
+			this->textBoxShow->Multiline = true;
+			this->textBoxShow->Name = L"textBoxShow";
+			this->textBoxShow->ReadOnly = true;
+			this->textBoxShow->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
+			this->textBoxShow->Size = System::Drawing::Size(260, 400);
+			this->textBoxShow->TabIndex = 0;
+			// 
+			// textBoxBanlance
+			// 
+			this->textBoxBanlance->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->textBoxBanlance->Location = System::Drawing::Point(210, 402);
+			this->textBoxBanlance->Name = L"textBoxBanlance";
+			this->textBoxBanlance->ReadOnly = true;
+			this->textBoxBanlance->Size = System::Drawing::Size(101, 23);
+			this->textBoxBanlance->TabIndex = 7;
+			// 
+			// btnBanlance
+			// 
+			this->btnBanlance->Location = System::Drawing::Point(110, 402);
+			this->btnBanlance->Name = L"btnBanlance";
+			this->btnBanlance->Size = System::Drawing::Size(75, 23);
+			this->btnBanlance->TabIndex = 6;
+			this->btnBanlance->Text = L"卡余额";
+			this->btnBanlance->UseVisualStyleBackColor = true;
 			// 
 			// MainForm
 			// 
@@ -805,6 +819,7 @@ namespace GUI {
 			this->splitContainer1->Panel2->ResumeLayout(false);
 			this->splitContainer1->ResumeLayout(false);
 			this->splitContainer2->Panel1->ResumeLayout(false);
+			this->splitContainer2->Panel1->PerformLayout();
 			this->splitContainer2->Panel2->ResumeLayout(false);
 			this->splitContainer2->Panel2->PerformLayout();
 			this->splitContainer2->ResumeLayout(false);
@@ -831,6 +846,9 @@ namespace GUI {
 private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^  e) {
 			 bGetReaderList = false;
 			 bDeviceChanged = false;
+			 strSelectedReader = nullptr;
+
+			 Button_Control(DISABLE_ALL_BUTTON);
 		}
 
 private: System::Void comboBox1_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -849,9 +867,61 @@ private: System::Void comboBox1_Click(System::Object^  sender, System::EventArgs
 					 bDeviceChanged = false;
 				 }else{
 					 this->comboBox1->Items->Clear();
+					 if(this->btnOpenDevice->Enabled){
+						Button_Control(DISABLE_ALL_BUTTON);
+					 }
 				 }
 			 }
 		 }
+private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+			 strSelectedReader = this->comboBox1->SelectedItem->ToString();
+			 this->btnOpenDevice->Enabled = true;
+		 }
+
+private: System::Void btnOpenDevice_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 
+		 }
+
+private: System::Void Button_Control(bool status){
+			  if(status){
+				  this->btnAuth->Enabled = true;
+				  
+				  this->btnBanlance->Enabled = true;
+				  this->btnBeAuthData->Enabled = true;
+				  
+				  this->btnChallengeCode->Enabled =true;
+				  this->btnCloseDevice->Enabled =true;
+				  this->btnDisOnCard->Enabled = true;
+				  this->btnExpense->Enabled =true;
+				  this->btnGetRandom->Enabled =true;
+				  this->btnLogIn->Enabled =true;
+				  
+				  this->btnOpenDevice->Enabled =true;
+				  this->btnRecharge->Enabled =true;
+				 
+				  
+			  }else{
+				  this->btnAuth->Enabled = false;
+				  
+				  this->btnBanlance->Enabled = false;
+				  this->btnBeAuthData->Enabled = false;
+				  
+				  this->btnChallengeCode->Enabled =false;
+				  this->btnCloseDevice->Enabled =false;
+				  this->btnDisOnCard->Enabled = false;
+				  this->btnExpense->Enabled =false;
+				  this->btnGetRandom->Enabled =false;
+				  this->btnLogIn->Enabled =false;
+				  
+				  this->btnOpenDevice->Enabled =false;
+				  this->btnRecharge->Enabled =false;
+				  
+				  
+			  }
+
+		  }
 };
+
 }
 

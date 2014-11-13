@@ -20,6 +20,7 @@ namespace FunctionModule {
 		SCARDHANDLE hCardHandle;
 
 		DWORD dwReaderLength;
+		DWORD dwActiveProtocal;
 
 		array<char>^ cReaderList;
 
@@ -49,6 +50,46 @@ namespace FunctionModule {
 			lRet = SCardListReaders(hContextHandle, SCARD_ALL_READERS, (LPTSTR)pcReaderList, lpdwReaderLength);
 			if(lRet != SCARD_S_SUCCESS){
 				return lRet;
+			}
+
+			return lRet;
+		}
+
+		long readerControl(bool status){
+
+			cli::pin_ptr<SCARDCONTEXT> lphContextHandle = &hContextHandle;
+			cli::pin_ptr<SCARDHANDLE> lphCardHandle = &hCardHandle;
+			cli::pin_ptr<char> pcReaderList = &cReaderList[0];
+			cli::pin_ptr<DWORD> pdwActiveProtocal = &dwActiveProtocal;
+
+			if(lphContextHandle != nullptr){
+				lRet = SCardReleaseContext(*lphContextHandle);
+				if(lRet != SCARD_S_SUCCESS){
+					return lRet;
+				}
+			}
+
+			lRet = SCardEstablishContext(SCARD_SCOPE_USER, NULL, NULL, lphContextHandle);
+			if(lRet != SCARD_S_SUCCESS){
+				return lRet;
+			}
+
+			if(status){
+				lRet = SCardConnect(*lphContextHandle, pcReaderList, SCARD_SHARE_DIRECT, SCARD_PROTOCOL_T0, lphCardHandle, pdwActiveProtocal);
+				if(lRet != SCARD_S_SUCCESS){
+					return lRet;
+				}
+
+			}else{
+				lRet = SCardDisconnect(*lphCardHandle, SCARD_LEAVE_CARD);
+				if(lRet != SCARD_S_SUCCESS){
+					return lRet;
+				}
+				lRet = SCardReleaseContext(*lphContextHandle);
+				if(lRet != SCARD_S_SUCCESS){
+					return lRet;
+				}
+
 			}
 
 			return lRet;
