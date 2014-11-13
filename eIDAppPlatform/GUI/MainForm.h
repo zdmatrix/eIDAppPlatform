@@ -36,6 +36,8 @@ namespace GUI {
 		bool bGetReaderList;
 
 		long lRet;
+	private: System::Windows::Forms::Label^  label13;
+	public: 
 
 		ReaderInterface^ ri;
 
@@ -224,6 +226,7 @@ namespace GUI {
 			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
 			this->textBoxShow = (gcnew System::Windows::Forms::TextBox());
 			this->btnBanlance = (gcnew System::Windows::Forms::Button());
+			this->label13 = (gcnew System::Windows::Forms::Label());
 			this->splitContainer1->Panel1->SuspendLayout();
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
@@ -316,6 +319,7 @@ namespace GUI {
 			// 
 			// splitContainer2.Panel2
 			// 
+			this->splitContainer2->Panel2->Controls->Add(this->label13);
 			this->splitContainer2->Panel2->Controls->Add(this->textBoxBanlance);
 			this->splitContainer2->Panel2->Controls->Add(this->textBoxShow);
 			this->splitContainer2->Panel2->Controls->Add(this->btnBanlance);
@@ -758,12 +762,12 @@ namespace GUI {
 			// 
 			// textBoxShow
 			// 
-			this->textBoxShow->Location = System::Drawing::Point(4, 37);
+			this->textBoxShow->Location = System::Drawing::Point(4, 80);
 			this->textBoxShow->Multiline = true;
 			this->textBoxShow->Name = L"textBoxShow";
 			this->textBoxShow->ReadOnly = true;
 			this->textBoxShow->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-			this->textBoxShow->Size = System::Drawing::Size(260, 399);
+			this->textBoxShow->Size = System::Drawing::Size(260, 356);
 			this->textBoxShow->TabIndex = 0;
 			// 
 			// btnBanlance
@@ -774,6 +778,17 @@ namespace GUI {
 			this->btnBanlance->TabIndex = 4;
 			this->btnBanlance->Text = L"¿¨Óà¶î";
 			this->btnBanlance->UseVisualStyleBackColor = true;
+			// 
+			// label13
+			// 
+			this->label13->AutoSize = true;
+			this->label13->Font = (gcnew System::Drawing::Font(L"ËÎÌå", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
+				static_cast<System::Byte>(134)));
+			this->label13->Location = System::Drawing::Point(97, 49);
+			this->label13->Name = L"label13";
+			this->label13->Size = System::Drawing::Size(72, 16);
+			this->label13->TabIndex = 6;
+			this->label13->Text = L"×´Ì¬Êä³ö";
 			// 
 			// MainForm
 			// 

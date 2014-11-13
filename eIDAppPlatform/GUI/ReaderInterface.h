@@ -1,6 +1,6 @@
 #pragma once
 
-#using <J:\work\Code\c++\project\eIDAppPlatform\eIDAppPlatform\debug\FunctionModule.dll>
+#using <..\\debug\\FunctionModule.dll>
 
 using namespace System;
 using namespace FunctionModule;
