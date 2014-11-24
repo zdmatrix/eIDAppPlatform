@@ -11,6 +11,8 @@ namespace GUI {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
+	using namespace System::Threading;
+
 	using namespace System::Security::Permissions;
 
 	using namespace FunctionModule;
@@ -28,22 +30,29 @@ namespace GUI {
 	{
 	public:
 
-		const static Int64 DBT_DEVICEREMOVECOMPLETE = 0x8004;   
-		const static Int64 DBT_DEVICEARRIVAL = 0x8000;   
-		const static Int64 DBT_DEVNODES_CHANGED = 0x0007;
+		const static Int32 HEX = 0x10;
+		const static Int32 DECIMAL = 0x0A;
 
 		const static bool ENABLE_ALL_BUTTON = true;
 		const static bool DISABLE_ALL_BUTTON = false;
+		const static bool OPEN_READER = true;
+		const static bool CLOSE_READER = false;
 
-		bool bDeviceChanged;
+		const static String^ OPEN_READER_ERROR_STR = gcnew String("Open Reader Failed!");
+		const static String^ CLOSE_READER_ERROR_STR = gcnew String("Close Reader Failed!");
+
+		Guid^ USBGUID;
+
+		array<byte>^ byGetRandom;
+
+		bool bPlugIn;
+		bool bPlugOut;
 		bool bGetReaderList;
+		bool bDeviceEnabled;
 
 		long lRet;
 
 		String^ strSelectedReader;
-	private: System::Windows::Forms::TextBox^  textBoxBanlance;
-	public: 
-	private: System::Windows::Forms::Button^  btnBanlance;
 
 	public: 
 
@@ -56,14 +65,19 @@ namespace GUI {
 			//TODO: 在此处添加构造函数代码
 			//
 
-			bDeviceChanged = false;
+			bPlugIn = false;
+			bPlugOut = false;
 			bGetReaderList = false;
+			bDeviceEnabled = false;
 
 			strSelectedReader = nullptr;
 
-			ri = gcnew ReaderInterface;
+			byGetRandom = gcnew array<byte>{0x00, (byte)0x84, 0x00, 0x00, 0x08};
 
+			USBGUID = gcnew Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
+			ri = gcnew ReaderInterface();
+						
 		}
 
 	protected:
@@ -141,6 +155,10 @@ namespace GUI {
 
 	private: System::Windows::Forms::Label^  label13;
 
+	private: System::Windows::Forms::TextBox^  textBoxBanlance;
+
+	private: System::Windows::Forms::Button^  btnBanlance;
+
 	protected: 
 
 		[SecurityPermission(SecurityAction::Demand, Flags=SecurityPermissionFlag::UnmanagedCode)]
@@ -153,13 +171,18 @@ namespace GUI {
 			case WM_DEVICECHANGE:
 
 				switch (safe_cast<int>(m.WParam)){
-					case DBT_DEVNODES_CHANGED:
-						bDeviceChanged = true;
+					case DBT_DEVICEARRIVAL:
+						bPlugIn = true;
+						bPlugOut = false;
+						break;
+					case DBT_DEVICEREMOVECOMPLETE:
+						bPlugIn = false;
+						bPlugOut = true;
 						break;
 					default:
 						break;
 				}
-
+				
 				// The WParam value identifies what is occurring.
 
 				// Invalidate to get new text painted.
@@ -168,6 +191,8 @@ namespace GUI {
 			}
 			Form::WndProc( m );
 		}
+private: System::ComponentModel::IContainer^  components;
+protected: 
 
 
 
@@ -180,7 +205,7 @@ namespace GUI {
 		/// <summary>
 		/// 必需的设计器变量。
 		/// </summary>
-		System::ComponentModel::Container ^components;
+
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -196,6 +221,8 @@ namespace GUI {
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->splitContainer2 = (gcnew System::Windows::Forms::SplitContainer());
+			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
+			this->btnBanlance = (gcnew System::Windows::Forms::Button());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
 			this->tabPageTest = (gcnew System::Windows::Forms::TabPage());
 			this->btnDisOnCard = (gcnew System::Windows::Forms::Button());
@@ -237,8 +264,6 @@ namespace GUI {
 			this->btnBeAuthData = (gcnew System::Windows::Forms::Button());
 			this->label13 = (gcnew System::Windows::Forms::Label());
 			this->textBoxShow = (gcnew System::Windows::Forms::TextBox());
-			this->textBoxBanlance = (gcnew System::Windows::Forms::TextBox());
-			this->btnBanlance = (gcnew System::Windows::Forms::Button());
 			this->splitContainer1->Panel1->SuspendLayout();
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
@@ -291,6 +316,7 @@ namespace GUI {
 			this->btnCloseDevice->TabIndex = 3;
 			this->btnCloseDevice->Text = L"关闭设备";
 			this->btnCloseDevice->UseVisualStyleBackColor = true;
+			this->btnCloseDevice->Click += gcnew System::EventHandler(this, &MainForm::btnCloseDevice_Click);
 			// 
 			// btnOpenDevice
 			// 
@@ -310,7 +336,7 @@ namespace GUI {
 			this->comboBox1->Size = System::Drawing::Size(437, 22);
 			this->comboBox1->TabIndex = 1;
 			this->comboBox1->SelectedIndexChanged += gcnew System::EventHandler(this, &MainForm::comboBox1_SelectedIndexChanged);
-			this->comboBox1->Click += gcnew System::EventHandler(this, &MainForm::comboBox1_Click);
+			this->comboBox1->DropDown += gcnew System::EventHandler(this, &MainForm::comboBox1_DropDown);
 			// 
 			// label1
 			// 
@@ -342,6 +368,24 @@ namespace GUI {
 			this->splitContainer2->Size = System::Drawing::Size(711, 440);
 			this->splitContainer2->SplitterDistance = 440;
 			this->splitContainer2->TabIndex = 0;
+			// 
+			// textBoxBanlance
+			// 
+			this->textBoxBanlance->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->textBoxBanlance->Location = System::Drawing::Point(210, 402);
+			this->textBoxBanlance->Name = L"textBoxBanlance";
+			this->textBoxBanlance->ReadOnly = true;
+			this->textBoxBanlance->Size = System::Drawing::Size(101, 23);
+			this->textBoxBanlance->TabIndex = 7;
+			// 
+			// btnBanlance
+			// 
+			this->btnBanlance->Location = System::Drawing::Point(110, 402);
+			this->btnBanlance->Name = L"btnBanlance";
+			this->btnBanlance->Size = System::Drawing::Size(75, 23);
+			this->btnBanlance->TabIndex = 6;
+			this->btnBanlance->Text = L"卡余额";
+			this->btnBanlance->UseVisualStyleBackColor = true;
 			// 
 			// tabControl1
 			// 
@@ -387,6 +431,7 @@ namespace GUI {
 			this->btnGetRandom->TabIndex = 4;
 			this->btnGetRandom->Text = L"读随机数";
 			this->btnGetRandom->UseVisualStyleBackColor = true;
+			this->btnGetRandom->Click += gcnew System::EventHandler(this, &MainForm::btnGetRandom_Click);
 			// 
 			// tabPageeCash
 			// 
@@ -397,7 +442,7 @@ namespace GUI {
 			this->tabPageeCash->Location = System::Drawing::Point(4, 34);
 			this->tabPageeCash->Name = L"tabPageeCash";
 			this->tabPageeCash->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageeCash->Size = System::Drawing::Size(426, 399);
+			this->tabPageeCash->Size = System::Drawing::Size(426, 341);
 			this->tabPageeCash->TabIndex = 1;
 			this->tabPageeCash->Text = L"eCash";
 			this->tabPageeCash->UseVisualStyleBackColor = true;
@@ -467,7 +512,7 @@ namespace GUI {
 			this->tabPageNewKey->Location = System::Drawing::Point(4, 34);
 			this->tabPageNewKey->Name = L"tabPageNewKey";
 			this->tabPageNewKey->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageNewKey->Size = System::Drawing::Size(426, 399);
+			this->tabPageNewKey->Size = System::Drawing::Size(426, 341);
 			this->tabPageNewKey->TabIndex = 2;
 			this->tabPageNewKey->Text = L"二代Key";
 			this->tabPageNewKey->UseVisualStyleBackColor = true;
@@ -635,7 +680,7 @@ namespace GUI {
 			this->tabPageOTP->Location = System::Drawing::Point(4, 34);
 			this->tabPageOTP->Name = L"tabPageOTP";
 			this->tabPageOTP->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageOTP->Size = System::Drawing::Size(426, 399);
+			this->tabPageOTP->Size = System::Drawing::Size(426, 341);
 			this->tabPageOTP->TabIndex = 3;
 			this->tabPageOTP->Text = L"OTP";
 			this->tabPageOTP->UseVisualStyleBackColor = true;
@@ -709,7 +754,7 @@ namespace GUI {
 			this->tabPageeID->Location = System::Drawing::Point(4, 34);
 			this->tabPageeID->Name = L"tabPageeID";
 			this->tabPageeID->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageeID->Size = System::Drawing::Size(426, 399);
+			this->tabPageeID->Size = System::Drawing::Size(426, 341);
 			this->tabPageeID->TabIndex = 4;
 			this->tabPageeID->Text = L"eID认证";
 			this->tabPageeID->UseVisualStyleBackColor = true;
@@ -786,24 +831,6 @@ namespace GUI {
 			this->textBoxShow->Size = System::Drawing::Size(260, 400);
 			this->textBoxShow->TabIndex = 0;
 			// 
-			// textBoxBanlance
-			// 
-			this->textBoxBanlance->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->textBoxBanlance->Location = System::Drawing::Point(210, 402);
-			this->textBoxBanlance->Name = L"textBoxBanlance";
-			this->textBoxBanlance->ReadOnly = true;
-			this->textBoxBanlance->Size = System::Drawing::Size(101, 23);
-			this->textBoxBanlance->TabIndex = 7;
-			// 
-			// btnBanlance
-			// 
-			this->btnBanlance->Location = System::Drawing::Point(110, 402);
-			this->btnBanlance->Name = L"btnBanlance";
-			this->btnBanlance->Size = System::Drawing::Size(75, 23);
-			this->btnBanlance->TabIndex = 6;
-			this->btnBanlance->Text = L"卡余额";
-			this->btnBanlance->UseVisualStyleBackColor = true;
-			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
@@ -844,43 +871,55 @@ namespace GUI {
 #pragma endregion
 
 private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^  e) {
+
+			 HWND hWnd;
+			 HDEVNOTIFY hDevNotify;
+
+			 DEV_BROADCAST_DEVICEINTERFACE NotificationFilter;
+			 
 			 bGetReaderList = false;
-			 bDeviceChanged = false;
+			 bDeviceEnabled = false;
 			 strSelectedReader = nullptr;
 
+			 array<Byte>^ guid = USBGUID->ToByteArray();
+			 cli::pin_ptr<Byte> byGuid = &guid[0];
+			 hWnd = (HWND)this->MainForm::Handle.ToPointer();
+
+			 NotificationFilter.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
+			 NotificationFilter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+			 NotificationFilter.dbcc_classguid = *(GUID*)byGuid;
+			 
+
+			 cli::pin_ptr<DEV_BROADCAST_DEVICEINTERFACE> pNotificationFilter = &NotificationFilter;
+			 hDevNotify = RegisterDeviceNotification(hWnd, pNotificationFilter, DEVICE_NOTIFY_WINDOW_HANDLE);
+
 			 Button_Control(DISABLE_ALL_BUTTON);
+
 		}
 
-private: System::Void comboBox1_Click(System::Object^  sender, System::EventArgs^  e) {
-			 if(bDeviceChanged){
-				 if(!bGetReaderList){
-					 lRet = ri->GetReaderList();
-					 if(lRet != SCARD_S_SUCCESS){
-						 bDeviceChanged = false;
-						 bGetReaderList = false;
-						 return;
-					 }
-					 for(int i = 0; i < ri->nReaderCounter; i ++){
-						this->comboBox1->Items->Add(ri->strReaderList[i]);
-					 }
-					 bGetReaderList = true;
-					 bDeviceChanged = false;
-				 }else{
-					 this->comboBox1->Items->Clear();
-					 if(this->btnOpenDevice->Enabled){
-						Button_Control(DISABLE_ALL_BUTTON);
-					 }
-				 }
-			 }
-		 }
+
 private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
-			 strSelectedReader = this->comboBox1->SelectedItem->ToString();
-			 this->btnOpenDevice->Enabled = true;
+			
+			 if(this->comboBox1->SelectedItem->ToString() != nullptr){
+				 strSelectedReader = this->comboBox1->SelectedItem->ToString();
+				 this->btnOpenDevice->Enabled = true;
+			 }
+			 
+
 		 }
 
 private: System::Void btnOpenDevice_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 
+			 lRet = ri->ReaderControl(strSelectedReader, OPEN_READER);
+			 if(lRet != SCARD_S_SUCCESS){
+				 ShowErrorDescription(lRet);
+				 bDeviceEnabled = false;
+			 }else{
+				 bDeviceEnabled = true;
+				 Button_Control(ENABLE_ALL_BUTTON);
+				 this->btnOpenDevice->Enabled = false;
+			 }
+
 		 }
 
 private: System::Void Button_Control(bool status){
@@ -919,6 +958,85 @@ private: System::Void Button_Control(bool status){
 				  
 				  
 			  }
+
+		  }
+private: System::Void btnGetRandom_Click(System::Object^  sender, System::EventArgs^  e) {
+			 if(bDeviceEnabled){
+				lRet = ri->DateTransformer(byGetRandom);
+				
+			 }
+		 }
+private: System::Void btnCloseDevice_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 lRet = ri->ReaderControl(strSelectedReader, CLOSE_READER);
+			 if(lRet != SCARD_S_SUCCESS){
+				 MessageBox::Show(CLOSE_READER_ERROR_STR + System::Environment::NewLine
+					 + "Error Code: 0x" + Convert::ToString(lRet, HEX));
+				 bDeviceEnabled = true;
+			 }else{
+				 bDeviceEnabled = false;
+				 Button_Control(DISABLE_ALL_BUTTON);
+				 this->btnOpenDevice->Enabled = true;
+			 }
+		 }
+
+private: System::Void comboBox1_DropDown(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(!bGetReaderList){
+				lRet = ri->GetReaderList();
+				if(lRet != SCARD_S_SUCCESS){
+					ShowErrorDescription(lRet);
+					return;
+				}else{
+					for(int i = 0; i < ri->nReaderCounter; i ++){
+						int n = this->comboBox1->FindString(ri->strReaderList[i]);
+						if(n == -1){
+							this->comboBox1->Items->Add(ri->strReaderList[i]);
+						}
+					}
+				}
+				bGetReaderList = true;
+			 }else{
+				 if(bPlugOut){
+					this->comboBox1->Items->Clear();
+					bPlugOut = false;
+					bGetReaderList = false;
+				 }
+			 }
+
+		 }
+
+
+
+ private: System::Void ShowErrorDescription(LONG ret){
+			  LPVOID lpMsgBuf = NULL;
+			  DWORD retval = 0;
+			  String^ ErrorDescription = gcnew String("");
+
+			  retval = FormatMessage(
+				  FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+				  FORMAT_MESSAGE_FROM_SYSTEM |
+				  FORMAT_MESSAGE_IGNORE_INSERTS,
+				  NULL,
+				  (DWORD)ret,
+				  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				  (LPTSTR) &lpMsgBuf,
+				  0, NULL );
+
+			  if(!retval){
+				  switch (ret){
+					case 0x6A82: ErrorDescription = "操作失败";
+						break;
+					default: 
+						break;
+				  }
+			  }else{
+				  ErrorDescription = String((LPTSTR)lpMsgBuf).ToString();
+			  }
+
+			  String^ str = String::Format("错误代码： 0x{0, 8:X8}", ret);
+			  str += ("\n错误原因： " + ErrorDescription);
+			  MessageBox::Show(str);
 
 		  }
 };

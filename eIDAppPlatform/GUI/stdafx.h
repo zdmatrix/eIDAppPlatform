@@ -7,3 +7,5 @@
 
 #include <Windows.h>
 #include "winscard.h"
+#include <dbt.h>
+

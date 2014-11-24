@@ -4,15 +4,18 @@
 long lRet;
 
 ReaderInterface::ReaderInterface(){
-	rd = gcnew ReaderDriver;
+	
+	rd = gcnew ReaderDriver();
+	strReaderList = gcnew array<String^>(MAX_READER);
+	nReaderCounter = 0;
+
 }
 
 long ReaderInterface::GetReaderList(){
 
 	int offset = 0;
 	nReaderCounter = 0;
-	strReaderList = gcnew array<String^>(MAX_READER);
-//	ReaderDriver^ rd = gcnew ReaderDriver;
+
 	lRet = rd->getReaderList();
 	if(lRet != SCARD_S_SUCCESS){
 		return lRet;
@@ -26,7 +29,21 @@ long ReaderInterface::GetReaderList(){
 	return lRet;
 }
 
-long ReaderInterface::ReaderControl(bool status){
-	lRet = rd->readerControl(status);
+long ReaderInterface::ReaderControl(String^ readername, bool status){
+	lRet = rd->readerControl(readername, status);
+	return lRet;
+}
+
+long ReaderInterface::DateTransformer(array<byte>^ cmd){
+
+	strResponse = gcnew String("");
+	lRet = rd->readerRW(cmd);
+	if(lRet != SCARD_S_SUCCESS){
+		return lRet;
+	}
+	cli::pin_ptr<byte> pbyResponse = &(rd->byResponseDate[0]);
+	for(int i = 0; i < rd->byResponseDate->Length; i ++){
+		strResponse += Convert::ToString(rd->byResponseDate[i], 16)->ToString();
+	}
 	return lRet;
 }
