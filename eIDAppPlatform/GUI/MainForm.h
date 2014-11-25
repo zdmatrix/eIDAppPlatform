@@ -41,6 +41,10 @@ namespace GUI {
 
 		static String^ OP_SUCCESS = gcnew String("Operation Success");
 
+		static String^ RECHARGE_TOO_MUCH = gcnew String("Recharge too Much!\r\nDo not Over 1000");
+		static String^ EXPENSE_TOO_MUCH = gcnew String("Expense too Much!\r\nDo not Over Banlance");
+		static String^ NO_INPUT = gcnew String("Please Enter a Value");
+
 		Guid^ USBGUID;
 
 		bool bPlugIn;
@@ -49,6 +53,7 @@ namespace GUI {
 
 
 		Int64 nBtnClick;
+		Int64 nBanlance;
 
 		long lRet;
 
@@ -70,6 +75,7 @@ namespace GUI {
 			bGetReaderList = false;
 
 			nBtnClick = 0;
+			nBanlance = 0;
 
 			strSelectedReader = nullptr;
 
@@ -376,6 +382,7 @@ protected:
 			this->textBoxBanlance->ReadOnly = true;
 			this->textBoxBanlance->Size = System::Drawing::Size(101, 23);
 			this->textBoxBanlance->TabIndex = 7;
+			this->textBoxBanlance->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
 			// btnBanlance
 			// 
@@ -385,6 +392,7 @@ protected:
 			this->btnBanlance->TabIndex = 6;
 			this->btnBanlance->Text = L"¿¨Óà¶î";
 			this->btnBanlance->UseVisualStyleBackColor = true;
+			this->btnBanlance->Click += gcnew System::EventHandler(this, &MainForm::btnBanlance_Click);
 			// 
 			// tabControl1
 			// 
@@ -479,6 +487,7 @@ protected:
 			this->btnExpense->TabIndex = 6;
 			this->btnExpense->Text = L"Ïû·Ñ";
 			this->btnExpense->UseVisualStyleBackColor = true;
+			this->btnExpense->Click += gcnew System::EventHandler(this, &MainForm::btnExpense_Click);
 			// 
 			// btnRecharge
 			// 
@@ -490,6 +499,7 @@ protected:
 			this->btnRecharge->TabIndex = 5;
 			this->btnRecharge->Text = L"³äÖµ";
 			this->btnRecharge->UseVisualStyleBackColor = true;
+			this->btnRecharge->Click += gcnew System::EventHandler(this, &MainForm::btnRecharge_Click);
 			// 
 			// tabPageNewKey
 			// 
@@ -876,6 +886,9 @@ private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^ 
 			 HDEVNOTIFY hDevNotify;
 
 			 DEV_BROADCAST_DEVICEINTERFACE NotificationFilter;
+
+			 nBanlance = 0;
+			 nBtnClick = 0;
 			 
 			 bGetReaderList = false;
 			 strSelectedReader = nullptr;
@@ -980,11 +993,13 @@ private: System::Void btnGetRandom_Click(System::Object^  sender, System::EventA
 private: System::Void btnDisOnCard_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 nBtnClick ++;
+
 			 lRet = ri->SelecteIDApplet();
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
 			 }
+
 			 lRet = ri->DisPlayOnCard(nBtnClick.ToString("D"), ri->DIS_NOTHING_ON_LINE);
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
@@ -992,6 +1007,104 @@ private: System::Void btnDisOnCard_Click(System::Object^  sender, System::EventA
 			 }
 			 FormatShow(btnDisOnCard, OP_SUCCESS);
 		 }
+
+
+private: System::Void btnRecharge_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 String^ recharge = gcnew String("");
+			 
+			 nBtnClick ++;
+
+			 lRet = ri->SelecteIDApplet();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 
+			 lRet = ri->GetBanlance();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+			
+			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
+			
+
+			 if(textBoxRecharge->Text->ToString() == nullptr){
+				 MessageBox::Show(NO_INPUT);
+				 return;
+			 }
+			 recharge = textBoxRecharge->Text->ToString();
+			 Int64 tmp = nBanlance + Convert::ToInt32(recharge, 10);
+			 if(tmp > 1000){
+				 MessageBox::Show(RECHARGE_TOO_MUCH);
+				 return;
+			 }
+
+			 lRet = ri->eCashRecharge(tmp.ToString("X8"));
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+			 FormatShow(btnRecharge, OP_SUCCESS);
+		 }
+
+
+private: System::Void btnExpense_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 String^ expense = gcnew String("");
+
+			 nBtnClick ++;
+
+			 lRet = ri->SelecteIDApplet();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+
+			 lRet = ri->GetBanlance();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
+
+
+			 if(textBoxExpense->Text->ToString() == nullptr){
+				 MessageBox::Show(NO_INPUT);
+				 return;
+			 }
+			 expense = textBoxExpense->Text->ToString();
+			 Int64 tmp = nBanlance - Convert::ToInt32(expense, 10);
+			 if(tmp < 0){
+				 MessageBox::Show(EXPENSE_TOO_MUCH);
+				 return;
+			 }
+
+			 lRet = ri->eCashRecharge(tmp.ToString("X8"));
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+			 FormatShow(btnExpense, OP_SUCCESS);
+		 }
+
+private: System::Void btnBanlance_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 
+			lRet = ri->GetBanlance();
+			if(lRet != OPERATION_SUCCESS){
+				MessageBox::Show(ri->strResponseSW);
+				return;
+			}
+			textBoxBanlance->Text = Convert::ToUInt32(ri->strResponseData, 16).ToString();
+			FormatShow(btnBanlance, OP_SUCCESS);
+		 }
+
+
 
 private: System::Void FormatShow(Object^ obj, String^ msg){
 
@@ -1043,7 +1156,6 @@ private: System::Void Button_Control(bool status){
 			 }
 
 		 }
-
 
 };
 

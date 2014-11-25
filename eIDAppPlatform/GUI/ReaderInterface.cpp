@@ -191,6 +191,60 @@ array<byte>^ ReaderInterface::GetDisDataArray(String^ data){
 	return byRet;
 }
 
+long ReaderInterface::eCashRecharge(String^ recharge){
+
+	lRet = UpdateBinFile(recharge);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+	return lRet;
+}
+
+long ReaderInterface::GetBanlance(){
+
+	lRet = DateTransformer(bySelectBinFile);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+
+	lRet = DateTransformer(byReadBinFile);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+	return lRet;
+}
+
+
+long ReaderInterface::UpdateBinFile(String^ data){
+
+	array<byte>^ cmd = gcnew array<byte>(9);
+
+	lRet = DateTransformer(bySelectBinFile);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+
+	System::Array::Copy(byUpdateBinFile, 0, cmd, 0, 5);
+
+	int len = data->Length / 2;
+	for(int i = 0, k = 0; i < len; i ++){
+		cmd[i + 5] = Convert::ToByte(data->Substring(k, 2), 16);
+		k += 2;
+	}																	   
+
+	lRet = DateTransformer(cmd);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+
+	return lRet;
+}
+
 String^ ReaderInterface::ErrorDescription(long ret){
 
 	 LPVOID lpMsgBuf = NULL;

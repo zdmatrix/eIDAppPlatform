@@ -36,6 +36,9 @@ public:
 	static array<byte>^ bySetDisplayData = gcnew array<byte>{(byte)0x80, (byte)0xBF, 0x01, 0x00, 0x00};
 
 	static array<byte>^ byDisplayOnCard = gcnew array<byte>{(byte)0x80, (byte)0xBF, 0x01, 0x03, 0x00};
+	static array<byte>^ bySelectBinFile = gcnew array<byte>{0x00, (byte)0xa4, 0x00, 0x00, 0x02, 0x55, 0x55};
+	static array<byte>^ byUpdateBinFile = gcnew array<byte>{0x00, (byte)0xd6, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00};
+	static array<byte>^ byReadBinFile = gcnew array<byte>{0x00, (byte)0xb0, 0x00, 0x00, 0x04};
 
 	static String^ OP_FAILED = gcnew String("Operation Failed£¡");
 	static String^ DIS_NOTHING_ON_LINE = gcnew String("DIS_NOTHING");
@@ -63,6 +66,9 @@ public:
 	long SelecteIDApplet();
 	long GetRandom();
 	long DisPlayOnCard(String^ line1, String^ line2);
+	long eCashRecharge(String^ recharge);
+	long GetBanlance();
+	long UpdateBinFile(String^ data);
 
 	String^ ErrorDescription(long ret);
 
