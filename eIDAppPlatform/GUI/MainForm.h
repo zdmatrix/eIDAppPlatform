@@ -30,25 +30,25 @@ namespace GUI {
 	{
 	public:
 
-		const static Int32 HEX = 0x10;
-		const static Int32 DECIMAL = 0x0A;
+		const static Int32 SW = 0x00;
+		const static Int32 DATA = 0x01;
+		const static Int64 OPERATION_SUCCESS = 0x9000;
 
 		const static bool ENABLE_ALL_BUTTON = true;
 		const static bool DISABLE_ALL_BUTTON = false;
 		const static bool OPEN_READER = true;
 		const static bool CLOSE_READER = false;
 
-		const static String^ OPEN_READER_ERROR_STR = gcnew String("Open Reader Failed!");
-		const static String^ CLOSE_READER_ERROR_STR = gcnew String("Close Reader Failed!");
+		static String^ OP_SUCCESS = gcnew String("Operation Success");
 
 		Guid^ USBGUID;
-
-		array<byte>^ byGetRandom;
 
 		bool bPlugIn;
 		bool bPlugOut;
 		bool bGetReaderList;
-		bool bDeviceEnabled;
+
+
+		Int64 nBtnClick;
 
 		long lRet;
 
@@ -68,11 +68,10 @@ namespace GUI {
 			bPlugIn = false;
 			bPlugOut = false;
 			bGetReaderList = false;
-			bDeviceEnabled = false;
+
+			nBtnClick = 0;
 
 			strSelectedReader = nullptr;
-
-			byGetRandom = gcnew array<byte>{0x00, (byte)0x84, 0x00, 0x00, 0x08};
 
 			USBGUID = gcnew Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
@@ -422,6 +421,7 @@ protected:
 			this->btnDisOnCard->TabIndex = 5;
 			this->btnDisOnCard->Text = L"写数据并显示";
 			this->btnDisOnCard->UseVisualStyleBackColor = true;
+			this->btnDisOnCard->Click += gcnew System::EventHandler(this, &MainForm::btnDisOnCard_Click);
 			// 
 			// btnGetRandom
 			// 
@@ -878,7 +878,6 @@ private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^ 
 			 DEV_BROADCAST_DEVICEINTERFACE NotificationFilter;
 			 
 			 bGetReaderList = false;
-			 bDeviceEnabled = false;
 			 strSelectedReader = nullptr;
 
 			 array<Byte>^ guid = USBGUID->ToByteArray();
@@ -897,6 +896,31 @@ private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^ 
 
 		}
 
+private: System::Void comboBox1_DropDown(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(!bGetReaderList){
+				 lRet = ri->GetReaderList();
+				 if(lRet != SCARD_S_SUCCESS){
+					 MessageBox::Show(ri->strResponseSW);
+					 return;
+				 }else{
+					 for(int i = 0; i < ri->nReaderCounter; i ++){
+						 int n = this->comboBox1->FindString(ri->strReaderList[i]);
+						 if(n == -1){
+							 this->comboBox1->Items->Add(ri->strReaderList[i]);
+						 }
+					 }
+				 }
+				 bGetReaderList = true;
+			 }else{
+				 if(bPlugOut){
+					 this->comboBox1->Items->Clear();
+					 bPlugOut = false;
+					 bGetReaderList = false;
+				 }
+			 }
+
+		 }
 
 private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 			
@@ -908,137 +932,119 @@ private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, Sy
 
 		 }
 
+
+
 private: System::Void btnOpenDevice_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 lRet = ri->ReaderControl(strSelectedReader, OPEN_READER);
 			 if(lRet != SCARD_S_SUCCESS){
-				 ShowErrorDescription(lRet);
-				 bDeviceEnabled = false;
+				 MessageBox::Show(ri->strResponseSW);
 			 }else{
-				 bDeviceEnabled = true;
 				 Button_Control(ENABLE_ALL_BUTTON);
 				 this->btnOpenDevice->Enabled = false;
 			 }
 
 		 }
 
-private: System::Void Button_Control(bool status){
-			  if(status){
-				  this->btnAuth->Enabled = true;
-				  
-				  this->btnBanlance->Enabled = true;
-				  this->btnBeAuthData->Enabled = true;
-				  
-				  this->btnChallengeCode->Enabled =true;
-				  this->btnCloseDevice->Enabled =true;
-				  this->btnDisOnCard->Enabled = true;
-				  this->btnExpense->Enabled =true;
-				  this->btnGetRandom->Enabled =true;
-				  this->btnLogIn->Enabled =true;
-				  
-				  this->btnOpenDevice->Enabled =true;
-				  this->btnRecharge->Enabled =true;
-				 
-				  
-			  }else{
-				  this->btnAuth->Enabled = false;
-				  
-				  this->btnBanlance->Enabled = false;
-				  this->btnBeAuthData->Enabled = false;
-				  
-				  this->btnChallengeCode->Enabled =false;
-				  this->btnCloseDevice->Enabled =false;
-				  this->btnDisOnCard->Enabled = false;
-				  this->btnExpense->Enabled =false;
-				  this->btnGetRandom->Enabled =false;
-				  this->btnLogIn->Enabled =false;
-				  
-				  this->btnOpenDevice->Enabled =false;
-				  this->btnRecharge->Enabled =false;
-				  
-				  
-			  }
-
-		  }
-private: System::Void btnGetRandom_Click(System::Object^  sender, System::EventArgs^  e) {
-			 if(bDeviceEnabled){
-				lRet = ri->DateTransformer(byGetRandom);
-				
-			 }
-		 }
 private: System::Void btnCloseDevice_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 lRet = ri->ReaderControl(strSelectedReader, CLOSE_READER);
 			 if(lRet != SCARD_S_SUCCESS){
-				 MessageBox::Show(CLOSE_READER_ERROR_STR + System::Environment::NewLine
-					 + "Error Code: 0x" + Convert::ToString(lRet, HEX));
-				 bDeviceEnabled = true;
+				 MessageBox::Show(ri->strResponseSW);
 			 }else{
-				 bDeviceEnabled = false;
 				 Button_Control(DISABLE_ALL_BUTTON);
 				 this->btnOpenDevice->Enabled = true;
 			 }
 		 }
 
-private: System::Void comboBox1_DropDown(System::Object^  sender, System::EventArgs^  e) {
 
-			 if(!bGetReaderList){
-				lRet = ri->GetReaderList();
-				if(lRet != SCARD_S_SUCCESS){
-					ShowErrorDescription(lRet);
-					return;
-				}else{
-					for(int i = 0; i < ri->nReaderCounter; i ++){
-						int n = this->comboBox1->FindString(ri->strReaderList[i]);
-						if(n == -1){
-							this->comboBox1->Items->Add(ri->strReaderList[i]);
-						}
-					}
-				}
-				bGetReaderList = true;
+
+
+private: System::Void btnGetRandom_Click(System::Object^  sender, System::EventArgs^  e) {
+			 			
+			nBtnClick ++;
+			lRet = ri->SelecteIDApplet();
+			if(lRet != OPERATION_SUCCESS){
+				MessageBox::Show(ri->strResponseSW);
+				return;
+			}
+			lRet = ri->GetRandom();
+			if(lRet != OPERATION_SUCCESS){
+				MessageBox::Show(ri->strResponseSW);
+				return;
+			}
+			FormatShow(btnGetRandom, ri->strResponseData);			 
+		 }
+
+
+private: System::Void btnDisOnCard_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 nBtnClick ++;
+			 lRet = ri->SelecteIDApplet();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+			 lRet = ri->DisPlayOnCard(nBtnClick.ToString("D"), ri->DIS_NOTHING_ON_LINE);
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+			 FormatShow(btnDisOnCard, OP_SUCCESS);
+		 }
+
+private: System::Void FormatShow(Object^ obj, String^ msg){
+
+			 String^ str = gcnew String("");
+			 Button^ btn = (Button^)obj;
+			 str = String::Format("{0, -4:D4}", nBtnClick);
+			 str += String::Format("{0, -20}", "#" + btn->Text->ToString() + ": " + Environment::NewLine);
+			 str += String::Format("{0, -30}", msg + Environment::NewLine);
+			 this->textBoxShow->AppendText(str  + Environment::NewLine);
+			 this->textBoxShow->ScrollToCaret();
+
+		 }
+
+private: System::Void Button_Control(bool status){
+			 if(status){
+				 this->btnAuth->Enabled = true;
+
+				 this->btnBanlance->Enabled = true;
+				 this->btnBeAuthData->Enabled = true;
+
+				 this->btnChallengeCode->Enabled =true;
+				 this->btnCloseDevice->Enabled =true;
+				 this->btnDisOnCard->Enabled = true;
+				 this->btnExpense->Enabled =true;
+				 this->btnGetRandom->Enabled =true;
+				 this->btnLogIn->Enabled =true;
+
+				 this->btnOpenDevice->Enabled =true;
+				 this->btnRecharge->Enabled =true;
+
+
 			 }else{
-				 if(bPlugOut){
-					this->comboBox1->Items->Clear();
-					bPlugOut = false;
-					bGetReaderList = false;
-				 }
+				 this->btnAuth->Enabled = false;
+
+				 this->btnBanlance->Enabled = false;
+				 this->btnBeAuthData->Enabled = false;
+
+				 this->btnChallengeCode->Enabled =false;
+				 this->btnCloseDevice->Enabled =false;
+				 this->btnDisOnCard->Enabled = false;
+				 this->btnExpense->Enabled =false;
+				 this->btnGetRandom->Enabled =false;
+				 this->btnLogIn->Enabled =false;
+
+				 this->btnOpenDevice->Enabled =false;
+				 this->btnRecharge->Enabled =false;
+
+
 			 }
 
 		 }
 
 
-
- private: System::Void ShowErrorDescription(LONG ret){
-			  LPVOID lpMsgBuf = NULL;
-			  DWORD retval = 0;
-			  String^ ErrorDescription = gcnew String("");
-
-			  retval = FormatMessage(
-				  FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-				  FORMAT_MESSAGE_FROM_SYSTEM |
-				  FORMAT_MESSAGE_IGNORE_INSERTS,
-				  NULL,
-				  (DWORD)ret,
-				  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				  (LPTSTR) &lpMsgBuf,
-				  0, NULL );
-
-			  if(!retval){
-				  switch (ret){
-					case 0x6A82: ErrorDescription = "操作失败";
-						break;
-					default: 
-						break;
-				  }
-			  }else{
-				  ErrorDescription = String((LPTSTR)lpMsgBuf).ToString();
-			  }
-
-			  String^ str = String::Format("错误代码： 0x{0, 8:X8}", ret);
-			  str += ("\n错误原因： " + ErrorDescription);
-			  MessageBox::Show(str);
-
-		  }
 };
 
 }

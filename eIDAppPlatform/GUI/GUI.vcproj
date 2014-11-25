@@ -270,14 +270,6 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="DataSources"
-			>
-			<File
-				RelativePath=".\ReaderInterface.datasource"
-				>
-			</File>
-		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>

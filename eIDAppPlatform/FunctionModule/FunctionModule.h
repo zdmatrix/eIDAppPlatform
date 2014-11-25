@@ -80,14 +80,11 @@ namespace FunctionModule {
 			cli::pin_ptr<DWORD> lpdwReaderLength = &dwReaderLength; 
 
 			if(status){
-				
-				if(hContextHandle == 0){
-					lRet = getReaderList();
-					if(lRet != SCARD_S_SUCCESS){
-						return lRet;
-					}
+
+				lRet = getReaderList();
+				if(lRet != SCARD_S_SUCCESS){
+					return lRet;
 				}
- 
 				lRet = SCardConnect(hContextHandle, pReadername, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, lphCardHandle, lpdwActiveProtocal);
 				if(lRet != SCARD_S_SUCCESS){
 					return lRet;
@@ -114,6 +111,8 @@ namespace FunctionModule {
 			SCARD_IO_REQUEST hIO_Request;
 			hIO_Request.dwProtocol = dwActiveProtocal;
 			hIO_Request.cbPciLength = (DWORD)sizeof(SCARD_IO_REQUEST);
+
+			dwResponseLen = MAX_RESPONSE_ONETIME;
 
 			cli::pin_ptr<SCARD_IO_REQUEST> lphIoRequest = &hIO_Request;
 			cli::pin_ptr<byte> lpbyResponseDate = &byResponseDate[0];
