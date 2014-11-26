@@ -15,6 +15,7 @@ public:
 	static const int LINE1 = 0x01;
 	static const int LINE2 = 0x02;
 	static const int LINE_INDEX_IN_ARRAY = 0x03;
+	static const int DISDATA_LENGTH_IN_ARRAY = 0x04;
 
 	static const Int64 OPERATION_SUCCESS = 0x9000;
 	static const Int64 FETCH_NEXT_DATA = 0x61;
@@ -39,6 +40,7 @@ public:
 	static array<byte>^ bySelectBinFile = gcnew array<byte>{0x00, (byte)0xa4, 0x00, 0x00, 0x02, 0x55, 0x55};
 	static array<byte>^ byUpdateBinFile = gcnew array<byte>{0x00, (byte)0xd6, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00};
 	static array<byte>^ byReadBinFile = gcnew array<byte>{0x00, (byte)0xb0, 0x00, 0x00, 0x04};
+	static array<byte>^ byEnableCardButtonPushed = gcnew array<byte>{(byte)0x80, (byte)0xbf, 0x06, 0x00, 0x00};
 
 	static String^ OP_FAILED = gcnew String("Operation Failed£¡");
 	static String^ DIS_NOTHING_ON_LINE = gcnew String("DIS_NOTHING");
@@ -61,14 +63,14 @@ public:
 	ReaderInterface();
 	long GetReaderList();
 	long ReaderControl(String^ readername, bool status);
-	long DateTransformer(array<byte>^ cmd);
+	long DateCommunication(array<byte>^ cmd);
 
 	long SelecteIDApplet();
 	long GetRandom();
 	long DisPlayOnCard(String^ line1, String^ line2);
-	long eCashRecharge(String^ recharge);
 	long GetBanlance();
 	long UpdateBinFile(String^ data);
+	long WaitCardButtonPushed();
 
 	String^ ErrorDescription(long ret);
 

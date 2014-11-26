@@ -72,7 +72,7 @@ long ReaderInterface::FetchNextData(byte length){
 }
 
 
-long ReaderInterface::DateTransformer(array<byte>^ cmd){
+long ReaderInterface::DateCommunication(array<byte>^ cmd){
 
 	int len = 0;
 	strResponseSW = "";
@@ -106,7 +106,7 @@ long ReaderInterface::DateTransformer(array<byte>^ cmd){
 
 long ReaderInterface::SelecteIDApplet(){
 
-	lRet = DateTransformer(bySelecteIDApplet);
+	lRet = DateCommunication(bySelecteIDApplet);
 	if(lRet != SCARD_S_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 	}
@@ -116,7 +116,7 @@ long ReaderInterface::SelecteIDApplet(){
 
 long ReaderInterface::GetRandom(){
 
-	lRet = DateTransformer(byGetRandom);
+	lRet = DateCommunication(byGetRandom);
 	if(lRet != OPERATION_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 		return lRet;
@@ -129,7 +129,7 @@ long ReaderInterface::DisPlayOnCard(String^ line1, String^ line2){
 	array<byte>^ cmd;
 
 	if(line1->Equals(DIS_NOTHING_ON_LINE)){
-		lRet = DateTransformer(byDisNothingFirstLine);
+		lRet = DateCommunication(byDisNothingFirstLine);
 		if(lRet != OPERATION_SUCCESS){
 			strResponseSW = ErrorDescription(lRet);
 			return lRet;
@@ -138,7 +138,7 @@ long ReaderInterface::DisPlayOnCard(String^ line1, String^ line2){
 		if(!line1->Equals(DIS_NOCHANGE)){
 			cmd = GetDisDataArray(line1);
 			cmd[LINE_INDEX_IN_ARRAY] = LINE1;
-			lRet = DateTransformer(cmd);
+			lRet = DateCommunication(cmd);
 			if(lRet != OPERATION_SUCCESS){
 				strResponseSW = ErrorDescription(lRet);
 				return lRet;
@@ -147,7 +147,7 @@ long ReaderInterface::DisPlayOnCard(String^ line1, String^ line2){
 	}
 
 	if(line2->Equals(DIS_NOTHING_ON_LINE)){
-		lRet = DateTransformer(byDisNothingSecondLine);
+		lRet = DateCommunication(byDisNothingSecondLine);
 		if(lRet != OPERATION_SUCCESS){
 			strResponseSW = ErrorDescription(lRet);
 			return lRet;
@@ -156,7 +156,7 @@ long ReaderInterface::DisPlayOnCard(String^ line1, String^ line2){
 		if(!line2->Equals(DIS_NOCHANGE)){
 			cmd = GetDisDataArray(line2);
 			cmd[LINE_INDEX_IN_ARRAY] = LINE2;
-			lRet = DateTransformer(cmd);
+			lRet = DateCommunication(cmd);
 			if(lRet != OPERATION_SUCCESS){
 				strResponseSW = ErrorDescription(lRet);
 				return lRet;
@@ -164,7 +164,7 @@ long ReaderInterface::DisPlayOnCard(String^ line1, String^ line2){
 		}
 	}
 
-	lRet = DateTransformer(byDisplayOnCard);
+	lRet = DateCommunication(byDisplayOnCard);
 	if(lRet != OPERATION_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 		return lRet;
@@ -180,36 +180,27 @@ array<byte>^ ReaderInterface::GetDisDataArray(String^ data){
 	array<wchar_t>^ byData = data->ToCharArray();
 
 	cli::interior_ptr<byte> pbyte = &bySetDisplayData[0];
-	*(pbyte + 4) = data->Length;
+	*(pbyte + DISDATA_LENGTH_IN_ARRAY) = data->Length;
 
-	for(int i = 0; i < 5; i ++){
-		byRet[i] = safe_cast<byte>(bySetDisplayData->GetValue(i));		
-	}
+	System::Array::Copy(bySetDisplayData, 0, byRet, 0, 5);
+
 	for(int i = 0; i < data->Length; i ++){
 		byRet[5 + i] = cli::safe_cast<byte>(byData[i]);		
 	}
+
 	return byRet;
 }
 
-long ReaderInterface::eCashRecharge(String^ recharge){
-
-	lRet = UpdateBinFile(recharge);
-	if(lRet != OPERATION_SUCCESS){
-		strResponseSW = ErrorDescription(lRet);
-		return lRet;
-	}
-	return lRet;
-}
 
 long ReaderInterface::GetBanlance(){
 
-	lRet = DateTransformer(bySelectBinFile);
+	lRet = DateCommunication(bySelectBinFile);
 	if(lRet != OPERATION_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 		return lRet;
 	}
 
-	lRet = DateTransformer(byReadBinFile);
+	lRet = DateCommunication(byReadBinFile);
 	if(lRet != OPERATION_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 		return lRet;
@@ -222,7 +213,7 @@ long ReaderInterface::UpdateBinFile(String^ data){
 
 	array<byte>^ cmd = gcnew array<byte>(9);
 
-	lRet = DateTransformer(bySelectBinFile);
+	lRet = DateCommunication(bySelectBinFile);
 	if(lRet != OPERATION_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 		return lRet;
@@ -236,7 +227,7 @@ long ReaderInterface::UpdateBinFile(String^ data){
 		k += 2;
 	}																	   
 
-	lRet = DateTransformer(cmd);
+	lRet = DateCommunication(cmd);
 	if(lRet != OPERATION_SUCCESS){
 		strResponseSW = ErrorDescription(lRet);
 		return lRet;
@@ -244,6 +235,20 @@ long ReaderInterface::UpdateBinFile(String^ data){
 
 	return lRet;
 }
+
+
+long ReaderInterface::WaitCardButtonPushed(){
+
+	lRet = DateCommunication(byEnableCardButtonPushed);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+
+	return lRet;
+}
+
+
 
 String^ ReaderInterface::ErrorDescription(long ret){
 

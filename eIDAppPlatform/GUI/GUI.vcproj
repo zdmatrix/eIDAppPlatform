@@ -200,6 +200,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DataTransform.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GUI.cpp"
 				>
 			</File>
@@ -233,6 +237,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\DataTransform.h"
+				>
+			</File>
 			<File
 				RelativePath=".\MainForm.h"
 				FileType="3"

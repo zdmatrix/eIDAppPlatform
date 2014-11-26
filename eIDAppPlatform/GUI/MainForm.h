@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ReaderInterface.h"
+#include "DataTransform.h"
 
 namespace GUI {
 
@@ -14,6 +15,9 @@ namespace GUI {
 	using namespace System::Threading;
 
 	using namespace System::Security::Permissions;
+	using namespace System::Security::Cryptography;
+
+	using namespace System::IO;
 
 	using namespace FunctionModule;
 
@@ -43,7 +47,11 @@ namespace GUI {
 
 		static String^ RECHARGE_TOO_MUCH = gcnew String("Recharge too Much!\r\nDo not Over 1000");
 		static String^ EXPENSE_TOO_MUCH = gcnew String("Expense too Much!\r\nDo not Over Banlance");
+		static String^ TRANSFORM_TOO_MUCH = gcnew String("Transform too Much!\r\nDo not Over Banlance");
 		static String^ NO_INPUT = gcnew String("Please Enter a Value");
+		static String^ SOURCE_ACCOUNT = gcnew String("0123456789");
+		static String^ DESTINATION_ACCOUNT = gcnew String("9876543210");
+		static String^ TRANSFORM_SUCCESSED = gcnew String("Transform Successed");
 
 		Guid^ USBGUID;
 
@@ -58,10 +66,13 @@ namespace GUI {
 		long lRet;
 
 		String^ strSelectedReader;
+		String^ strRandom;
 
-	public: 
+		RandomNumberGenerator^ random;
 
 		ReaderInterface^ ri;
+
+		DataTransform^ dt;
 
 		MainForm(void)
 		{
@@ -77,11 +88,17 @@ namespace GUI {
 			nBtnClick = 0;
 			nBanlance = 0;
 
+			
+
+			random = RandomNumberGenerator::Create();
+
 			strSelectedReader = nullptr;
+			strRandom = nullptr;
 
 			USBGUID = gcnew Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
 			ri = gcnew ReaderInterface();
+			dt = gcnew DataTransform();
 						
 		}
 
@@ -164,6 +181,9 @@ namespace GUI {
 
 	private: System::Windows::Forms::Button^  btnBanlance;
 
+	private: System::Windows::Forms::Button^  btnSendToCard;
+
+
 	protected: 
 
 		[SecurityPermission(SecurityAction::Demand, Flags=SecurityPermissionFlag::UnmanagedCode)]
@@ -238,6 +258,7 @@ protected:
 			this->btnExpense = (gcnew System::Windows::Forms::Button());
 			this->btnRecharge = (gcnew System::Windows::Forms::Button());
 			this->tabPageNewKey = (gcnew System::Windows::Forms::TabPage());
+			this->btnSendToCard = (gcnew System::Windows::Forms::Button());
 			this->pictureBoxAuthCode = (gcnew System::Windows::Forms::PictureBox());
 			this->pictureBoxTransform = (gcnew System::Windows::Forms::PictureBox());
 			this->pictureBoxDstAccount = (gcnew System::Windows::Forms::PictureBox());
@@ -405,7 +426,7 @@ protected:
 			this->tabControl1->Location = System::Drawing::Point(3, 3);
 			this->tabControl1->Name = L"tabControl1";
 			this->tabControl1->SelectedIndex = 0;
-			this->tabControl1->Size = System::Drawing::Size(434, 379);
+			this->tabControl1->Size = System::Drawing::Size(434, 383);
 			this->tabControl1->SizeMode = System::Windows::Forms::TabSizeMode::Fixed;
 			this->tabControl1->TabIndex = 0;
 			// 
@@ -416,7 +437,7 @@ protected:
 			this->tabPageTest->Location = System::Drawing::Point(4, 34);
 			this->tabPageTest->Name = L"tabPageTest";
 			this->tabPageTest->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageTest->Size = System::Drawing::Size(426, 341);
+			this->tabPageTest->Size = System::Drawing::Size(426, 345);
 			this->tabPageTest->TabIndex = 0;
 			this->tabPageTest->Text = L"卡测试";
 			this->tabPageTest->UseVisualStyleBackColor = true;
@@ -450,7 +471,7 @@ protected:
 			this->tabPageeCash->Location = System::Drawing::Point(4, 34);
 			this->tabPageeCash->Name = L"tabPageeCash";
 			this->tabPageeCash->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageeCash->Size = System::Drawing::Size(426, 341);
+			this->tabPageeCash->Size = System::Drawing::Size(426, 345);
 			this->tabPageeCash->TabIndex = 1;
 			this->tabPageeCash->Text = L"eCash";
 			this->tabPageeCash->UseVisualStyleBackColor = true;
@@ -503,6 +524,7 @@ protected:
 			// 
 			// tabPageNewKey
 			// 
+			this->tabPageNewKey->Controls->Add(this->btnSendToCard);
 			this->tabPageNewKey->Controls->Add(this->pictureBoxAuthCode);
 			this->tabPageNewKey->Controls->Add(this->pictureBoxTransform);
 			this->tabPageNewKey->Controls->Add(this->pictureBoxDstAccount);
@@ -522,47 +544,57 @@ protected:
 			this->tabPageNewKey->Location = System::Drawing::Point(4, 34);
 			this->tabPageNewKey->Name = L"tabPageNewKey";
 			this->tabPageNewKey->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageNewKey->Size = System::Drawing::Size(426, 341);
+			this->tabPageNewKey->Size = System::Drawing::Size(426, 345);
 			this->tabPageNewKey->TabIndex = 2;
 			this->tabPageNewKey->Text = L"二代Key";
 			this->tabPageNewKey->UseVisualStyleBackColor = true;
 			// 
+			// btnSendToCard
+			// 
+			this->btnSendToCard->Location = System::Drawing::Point(354, 55);
+			this->btnSendToCard->Name = L"btnSendToCard";
+			this->btnSendToCard->Size = System::Drawing::Size(66, 96);
+			this->btnSendToCard->TabIndex = 20;
+			this->btnSendToCard->Text = L"卡验证";
+			this->btnSendToCard->UseVisualStyleBackColor = true;
+			this->btnSendToCard->Click += gcnew System::EventHandler(this, &MainForm::btnSendToCard_Click);
+			// 
 			// pictureBoxAuthCode
 			// 
-			this->pictureBoxAuthCode->Location = System::Drawing::Point(172, 310);
+			this->pictureBoxAuthCode->Location = System::Drawing::Point(172, 299);
 			this->pictureBoxAuthCode->Name = L"pictureBoxAuthCode";
-			this->pictureBoxAuthCode->Size = System::Drawing::Size(176, 31);
+			this->pictureBoxAuthCode->Size = System::Drawing::Size(160, 31);
 			this->pictureBoxAuthCode->TabIndex = 19;
 			this->pictureBoxAuthCode->TabStop = false;
 			// 
 			// pictureBoxTransform
 			// 
-			this->pictureBoxTransform->Location = System::Drawing::Point(172, 279);
+			this->pictureBoxTransform->Location = System::Drawing::Point(172, 268);
 			this->pictureBoxTransform->Name = L"pictureBoxTransform";
-			this->pictureBoxTransform->Size = System::Drawing::Size(176, 31);
+			this->pictureBoxTransform->Size = System::Drawing::Size(160, 31);
 			this->pictureBoxTransform->TabIndex = 18;
 			this->pictureBoxTransform->TabStop = false;
 			// 
 			// pictureBoxDstAccount
 			// 
-			this->pictureBoxDstAccount->Location = System::Drawing::Point(172, 248);
+			this->pictureBoxDstAccount->Location = System::Drawing::Point(172, 237);
 			this->pictureBoxDstAccount->Name = L"pictureBoxDstAccount";
-			this->pictureBoxDstAccount->Size = System::Drawing::Size(176, 31);
+			this->pictureBoxDstAccount->Size = System::Drawing::Size(160, 31);
 			this->pictureBoxDstAccount->TabIndex = 17;
 			this->pictureBoxDstAccount->TabStop = false;
 			// 
 			// pictureBoxSrcAccount
 			// 
-			this->pictureBoxSrcAccount->Location = System::Drawing::Point(172, 217);
+			this->pictureBoxSrcAccount->Location = System::Drawing::Point(172, 206);
 			this->pictureBoxSrcAccount->Name = L"pictureBoxSrcAccount";
-			this->pictureBoxSrcAccount->Size = System::Drawing::Size(176, 31);
+			this->pictureBoxSrcAccount->Size = System::Drawing::Size(160, 31);
 			this->pictureBoxSrcAccount->TabIndex = 16;
 			this->pictureBoxSrcAccount->TabStop = false;
 			// 
 			// label10
 			// 
 			this->label10->AutoSize = true;
-			this->label10->Location = System::Drawing::Point(79, 318);
+			this->label10->Location = System::Drawing::Point(79, 307);
 			this->label10->Name = L"label10";
 			this->label10->Size = System::Drawing::Size(49, 14);
 			this->label10->TabIndex = 15;
@@ -571,7 +603,7 @@ protected:
 			// label7
 			// 
 			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(79, 287);
+			this->label7->Location = System::Drawing::Point(79, 276);
 			this->label7->Name = L"label7";
 			this->label7->Size = System::Drawing::Size(63, 14);
 			this->label7->TabIndex = 14;
@@ -580,7 +612,7 @@ protected:
 			// label8
 			// 
 			this->label8->AutoSize = true;
-			this->label8->Location = System::Drawing::Point(79, 256);
+			this->label8->Location = System::Drawing::Point(79, 245);
 			this->label8->Name = L"label8";
 			this->label8->Size = System::Drawing::Size(63, 14);
 			this->label8->TabIndex = 13;
@@ -589,7 +621,7 @@ protected:
 			// label9
 			// 
 			this->label9->AutoSize = true;
-			this->label9->Location = System::Drawing::Point(79, 225);
+			this->label9->Location = System::Drawing::Point(79, 214);
 			this->label9->Name = L"label9";
 			this->label9->Size = System::Drawing::Size(49, 14);
 			this->label9->TabIndex = 12;
@@ -600,7 +632,7 @@ protected:
 			this->label6->AutoSize = true;
 			this->label6->Font = (gcnew System::Drawing::Font(L"宋体", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(134)));
-			this->label6->Location = System::Drawing::Point(169, 186);
+			this->label6->Location = System::Drawing::Point(169, 175);
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(104, 16);
 			this->label6->TabIndex = 11;
@@ -613,7 +645,7 @@ protected:
 				static_cast<System::Byte>(134)));
 			this->textBoxTransform->Location = System::Drawing::Point(172, 130);
 			this->textBoxTransform->Name = L"textBoxTransform";
-			this->textBoxTransform->Size = System::Drawing::Size(176, 21);
+			this->textBoxTransform->Size = System::Drawing::Size(160, 21);
 			this->textBoxTransform->TabIndex = 10;
 			this->textBoxTransform->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -625,7 +657,7 @@ protected:
 			this->textBoxDstAccount->Location = System::Drawing::Point(172, 92);
 			this->textBoxDstAccount->Name = L"textBoxDstAccount";
 			this->textBoxDstAccount->ReadOnly = true;
-			this->textBoxDstAccount->Size = System::Drawing::Size(176, 21);
+			this->textBoxDstAccount->Size = System::Drawing::Size(160, 21);
 			this->textBoxDstAccount->TabIndex = 9;
 			this->textBoxDstAccount->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -637,7 +669,7 @@ protected:
 			this->textBoxSrcAccount->Location = System::Drawing::Point(172, 55);
 			this->textBoxSrcAccount->Name = L"textBoxSrcAccount";
 			this->textBoxSrcAccount->ReadOnly = true;
-			this->textBoxSrcAccount->Size = System::Drawing::Size(176, 21);
+			this->textBoxSrcAccount->Size = System::Drawing::Size(160, 21);
 			this->textBoxSrcAccount->TabIndex = 8;
 			this->textBoxSrcAccount->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
@@ -690,7 +722,7 @@ protected:
 			this->tabPageOTP->Location = System::Drawing::Point(4, 34);
 			this->tabPageOTP->Name = L"tabPageOTP";
 			this->tabPageOTP->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageOTP->Size = System::Drawing::Size(426, 341);
+			this->tabPageOTP->Size = System::Drawing::Size(426, 345);
 			this->tabPageOTP->TabIndex = 3;
 			this->tabPageOTP->Text = L"OTP";
 			this->tabPageOTP->UseVisualStyleBackColor = true;
@@ -764,7 +796,7 @@ protected:
 			this->tabPageeID->Location = System::Drawing::Point(4, 34);
 			this->tabPageeID->Name = L"tabPageeID";
 			this->tabPageeID->Padding = System::Windows::Forms::Padding(3);
-			this->tabPageeID->Size = System::Drawing::Size(426, 341);
+			this->tabPageeID->Size = System::Drawing::Size(426, 345);
 			this->tabPageeID->TabIndex = 4;
 			this->tabPageeID->Text = L"eID认证";
 			this->tabPageeID->UseVisualStyleBackColor = true;
@@ -907,6 +939,9 @@ private: System::Void MainForm_Load(System::Object^  sender, System::EventArgs^ 
 
 			 Button_Control(DISABLE_ALL_BUTTON);
 
+			 textBoxSrcAccount->Text = SOURCE_ACCOUNT;
+			 textBoxDstAccount->Text = DESTINATION_ACCOUNT;
+
 		}
 
 private: System::Void comboBox1_DropDown(System::Object^  sender, System::EventArgs^  e) {
@@ -1031,7 +1066,7 @@ private: System::Void btnRecharge_Click(System::Object^  sender, System::EventAr
 			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
 			
 
-			 if(textBoxRecharge->Text->ToString() == nullptr){
+			 if(textBoxRecharge->Text->ToString()->Equals("")){
 				 MessageBox::Show(NO_INPUT);
 				 return;
 			 }
@@ -1042,7 +1077,7 @@ private: System::Void btnRecharge_Click(System::Object^  sender, System::EventAr
 				 return;
 			 }
 
-			 lRet = ri->eCashRecharge(tmp.ToString("X8"));
+			 lRet = ri->UpdateBinFile(tmp.ToString("X8"));
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
@@ -1073,7 +1108,7 @@ private: System::Void btnExpense_Click(System::Object^  sender, System::EventArg
 			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
 
 
-			 if(textBoxExpense->Text->ToString() == nullptr){
+			 if(textBoxExpense->Text->ToString()->Equals("")){
 				 MessageBox::Show(NO_INPUT);
 				 return;
 			 }
@@ -1084,7 +1119,7 @@ private: System::Void btnExpense_Click(System::Object^  sender, System::EventArg
 				 return;
 			 }
 
-			 lRet = ri->eCashRecharge(tmp.ToString("X8"));
+			 lRet = ri->UpdateBinFile(tmp.ToString("X8"));
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
@@ -1094,6 +1129,7 @@ private: System::Void btnExpense_Click(System::Object^  sender, System::EventArg
 
 private: System::Void btnBanlance_Click(System::Object^  sender, System::EventArgs^  e) {
 
+			nBtnClick ++;
 			 
 			lRet = ri->GetBanlance();
 			if(lRet != OPERATION_SUCCESS){
@@ -1105,6 +1141,121 @@ private: System::Void btnBanlance_Click(System::Object^  sender, System::EventAr
 		 }
 
 
+private: System::Void btnSendToCard_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 String^ transform = gcnew String("");
+
+			 nBtnClick ++;
+
+			 lRet = ri->SelecteIDApplet();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+
+			 lRet = ri->GetBanlance();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
+
+
+			 if(textBoxTransform->Text->ToString()->Equals("")){
+				 MessageBox::Show(NO_INPUT);
+				 return;
+			 }
+			 transform = textBoxTransform->Text->ToString();
+			 Int64 tmp = nBanlance - Convert::ToInt32(transform, 10);
+			 if(tmp < 0){
+				 MessageBox::Show(TRANSFORM_TOO_MUCH);
+				 return;
+			 }
+
+			 lRet = ri->DisPlayOnCard(textBoxSrcAccount->Text->ToString()->Substring(4, 6), transform);
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 MessageBox::Show("请确认卡上显示的目的账户与转账金额与输入的是否相同" + Environment::NewLine
+				 + "若一致请按下卡上按钮生成认证码");
+
+			
+			 lRet = ri->WaitCardButtonPushed();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+			
+			 GenerateRandom();
+
+			 lRet = ri->DisPlayOnCard(transform, strRandom);
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+
+			 LPBYTE lpbySrcAccount = dt->getImageData(textBoxSrcAccount->Text);
+			 LPBYTE lpbyDstAccount = dt->getImageData(textBoxDstAccount->Text);
+			 LPBYTE lpbyTransform = dt->getImageData(textBoxTransform->Text);
+			 LPBYTE lpbyAuthCode = dt->getImageData(strRandom);
+			 DisImage(lpbySrcAccount, pictureBoxSrcAccount);
+			 DisImage(lpbyDstAccount, pictureBoxDstAccount);
+			 DisImage(lpbyTransform, pictureBoxTransform);
+			 DisImage(lpbyAuthCode, pictureBoxAuthCode);
+
+			 MessageBox::Show("请确认卡上显示的转账金额与认证码和软件界面中显示的是否相同" + Environment::NewLine
+				 + "若一致请按下卡上按钮确认交易");
+
+			 lRet = ri->WaitCardButtonPushed();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 lRet = ri->UpdateBinFile(tmp.ToString("X8"));
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 FormatShow(btnSendToCard, OP_SUCCESS);
+			 ShowMsg(TRANSFORM_SUCCESSED);
+		 }
+
+
+private: System::Void DisImage(LPBYTE lpbyNum, PictureBox^ picbox){
+
+			 array<BYTE>^ buf = gcnew array<BYTE>(470);
+			 for(int i = 0; i < 470; i ++){
+				 buf[i] = (BYTE)lpbyNum[i];
+			 }
+			 MemoryStream^ ms = gcnew MemoryStream(470);
+			 ms->Write(buf, 0, buf->Length);
+
+			 Bitmap^ myImage;
+
+			 myImage = gcnew System::Drawing::Bitmap(ms);
+			 picbox->Image = dynamic_cast<Image^>(myImage);
+
+		 }
+
+
+
+private: System::Void GenerateRandom(){
+
+			 array<byte>^ byRandom = gcnew array<byte>(6);
+			 strRandom = "";
+			 random->GetBytes(byRandom);
+			 for(int i = 0; i < 6; i ++){
+				 strRandom += Convert::ToString(byRandom[i] % 10, 10);
+			 }
+
+		 }
 
 private: System::Void FormatShow(Object^ obj, String^ msg){
 
@@ -1117,6 +1268,17 @@ private: System::Void FormatShow(Object^ obj, String^ msg){
 			 this->textBoxShow->ScrollToCaret();
 
 		 }
+
+
+private: System::Void ShowMsg(String^ msg){
+
+			 String^ str = gcnew String("");
+			 str += String::Format("{0, -20}", msg + Environment::NewLine);
+			 this->textBoxShow->AppendText(str  + Environment::NewLine);
+			 this->textBoxShow->ScrollToCaret();
+
+		 }
+
 
 private: System::Void Button_Control(bool status){
 			 if(status){
@@ -1156,6 +1318,7 @@ private: System::Void Button_Control(bool status){
 			 }
 
 		 }
+
 
 };
 
