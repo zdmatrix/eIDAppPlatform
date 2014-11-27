@@ -237,6 +237,25 @@ long ReaderInterface::UpdateBinFile(String^ data){
 }
 
 
+long ReaderInterface::eIDAuth(){
+
+	lRet = DateCommunication(byRSAPrivateKeySign);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+
+	lRet = DateCommunication(byRSAPublicKeyVerify);
+	if(lRet != OPERATION_SUCCESS){
+		strResponseSW = ErrorDescription(lRet);
+		return lRet;
+	}
+
+	return lRet;
+}
+
+
+
 long ReaderInterface::WaitCardButtonPushed(){
 
 	lRet = DateCommunication(byEnableCardButtonPushed);

@@ -65,11 +65,15 @@ namespace GUI {
 		static String^ CONFIRM_RESPONSE_CODE = gcnew String("请确认卡上显示的应答码与界面上显示的应答码是否一致" + Environment::NewLine
 			+ "若一致请按下界面上的“登录”按钮登录");
 
+		static String^ CONFIRM_AUTH_DATA = gcnew String("请确认卡上显示的待认证数据与界面上显示的待认证数据是否一致" + Environment::NewLine
+			+ "若一致请按下卡上按钮进行认证");
+
 		static String^ EXPENSE_TITILE = gcnew String("eCash-消费");
 		static String^ RECHARGE_TITLE = gcnew String("eCash-充值");
 		static String^ GET_BANLANCE_TITLE = gcnew String("读卡余额");
 		static String^ NEW_KEY_TITLE = gcnew String("模拟转账演示");
 		static String^ OTP_TITLE = gcnew String("OTP功能演示");
+		static String^ EID_AUTH_TITLE = gcnew String("eID认证功能演示");
 
 		static String^ NO_INPUT = gcnew String("Please Enter a Value");
 
@@ -196,10 +200,13 @@ namespace GUI {
 	private: System::Windows::Forms::Button^  btnDisOnCard;
 	private: System::Windows::Forms::Button^  btnGetRandom;
 	private: System::Windows::Forms::Button^  btnBeAuthData;
-	private: System::Windows::Forms::Button^  btnAuth;
-	private: System::Windows::Forms::TextBox^  textBox1;
+private: System::Windows::Forms::TextBox^  textBoxBeAuthed;
+
+
+
 	private: System::Windows::Forms::Label^  label12;
-	private: System::Windows::Forms::TextBox^  textBox2;
+private: System::Windows::Forms::TextBox^  textBoxAuthed;
+
 
 	private: System::Windows::Forms::Label^  label13;
 
@@ -310,9 +317,8 @@ protected:
 			this->btnChallengeCode = (gcnew System::Windows::Forms::Button());
 			this->tabPageeID = (gcnew System::Windows::Forms::TabPage());
 			this->label12 = (gcnew System::Windows::Forms::Label());
-			this->textBox2 = (gcnew System::Windows::Forms::TextBox());
-			this->btnAuth = (gcnew System::Windows::Forms::Button());
-			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
+			this->textBoxAuthed = (gcnew System::Windows::Forms::TextBox());
+			this->textBoxBeAuthed = (gcnew System::Windows::Forms::TextBox());
 			this->btnBeAuthData = (gcnew System::Windows::Forms::Button());
 			this->label13 = (gcnew System::Windows::Forms::Label());
 			this->textBoxShow = (gcnew System::Windows::Forms::TextBox());
@@ -817,9 +823,8 @@ protected:
 			// tabPageeID
 			// 
 			this->tabPageeID->Controls->Add(this->label12);
-			this->tabPageeID->Controls->Add(this->textBox2);
-			this->tabPageeID->Controls->Add(this->btnAuth);
-			this->tabPageeID->Controls->Add(this->textBox1);
+			this->tabPageeID->Controls->Add(this->textBoxAuthed);
+			this->tabPageeID->Controls->Add(this->textBoxBeAuthed);
 			this->tabPageeID->Controls->Add(this->btnBeAuthData);
 			this->tabPageeID->Location = System::Drawing::Point(4, 34);
 			this->tabPageeID->Name = L"tabPageeID";
@@ -838,47 +843,39 @@ protected:
 			this->label12->Text = L"认证数据";
 			this->label12->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
-			// textBox2
+			// textBoxAuthed
 			// 
-			this->textBox2->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->textBox2->Font = (gcnew System::Drawing::Font(L"宋体", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
+			this->textBoxAuthed->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->textBoxAuthed->Font = (gcnew System::Drawing::Font(L"宋体", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(134)));
-			this->textBox2->Location = System::Drawing::Point(185, 195);
-			this->textBox2->Name = L"textBox2";
-			this->textBox2->ReadOnly = true;
-			this->textBox2->Size = System::Drawing::Size(201, 26);
-			this->textBox2->TabIndex = 15;
-			this->textBox2->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
+			this->textBoxAuthed->Location = System::Drawing::Point(185, 195);
+			this->textBoxAuthed->Name = L"textBoxAuthed";
+			this->textBoxAuthed->ReadOnly = true;
+			this->textBoxAuthed->Size = System::Drawing::Size(201, 26);
+			this->textBoxAuthed->TabIndex = 15;
+			this->textBoxAuthed->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
-			// btnAuth
+			// textBoxBeAuthed
 			// 
-			this->btnAuth->Location = System::Drawing::Point(153, 111);
-			this->btnAuth->Name = L"btnAuth";
-			this->btnAuth->Size = System::Drawing::Size(125, 31);
-			this->btnAuth->TabIndex = 13;
-			this->btnAuth->Text = L"开始认证";
-			this->btnAuth->UseVisualStyleBackColor = true;
-			// 
-			// textBox1
-			// 
-			this->textBox1->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->textBox1->Font = (gcnew System::Drawing::Font(L"宋体", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
+			this->textBoxBeAuthed->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->textBoxBeAuthed->Font = (gcnew System::Drawing::Font(L"宋体", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(134)));
-			this->textBox1->Location = System::Drawing::Point(185, 52);
-			this->textBox1->Name = L"textBox1";
-			this->textBox1->ReadOnly = true;
-			this->textBox1->Size = System::Drawing::Size(201, 26);
-			this->textBox1->TabIndex = 12;
-			this->textBox1->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
+			this->textBoxBeAuthed->Location = System::Drawing::Point(185, 95);
+			this->textBoxBeAuthed->Name = L"textBoxBeAuthed";
+			this->textBoxBeAuthed->ReadOnly = true;
+			this->textBoxBeAuthed->Size = System::Drawing::Size(201, 26);
+			this->textBoxBeAuthed->TabIndex = 12;
+			this->textBoxBeAuthed->TextAlign = System::Windows::Forms::HorizontalAlignment::Center;
 			// 
 			// btnBeAuthData
 			// 
-			this->btnBeAuthData->Location = System::Drawing::Point(43, 50);
+			this->btnBeAuthData->Location = System::Drawing::Point(43, 93);
 			this->btnBeAuthData->Name = L"btnBeAuthData";
 			this->btnBeAuthData->Size = System::Drawing::Size(125, 31);
 			this->btnBeAuthData->TabIndex = 6;
 			this->btnBeAuthData->Text = L"生成待认证数据";
 			this->btnBeAuthData->UseVisualStyleBackColor = true;
+			this->btnBeAuthData->Click += gcnew System::EventHandler(this, &MainForm::btnBeAuthData_Click);
 			// 
 			// label13
 			// 
@@ -1226,6 +1223,49 @@ private: System::Void btnLogIn_Click(System::Object^  sender, System::EventArgs^
 		 }
 
 
+
+private: System::Void btnBeAuthData_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 GenerateBeAuthedData();
+
+			 textBoxBeAuthed->Text = strRandom;
+
+			 lRet = ri->DisPlayOnCard(strRandom->Substring(2, 6), ri->DIS_NOTHING_ON_LINE);
+
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 MessageBox::Show(CONFIRM_AUTH_DATA);
+
+			 lRet = ri->WaitCardButtonPushed();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 lRet = ri->SelecteIDApplet();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 lRet = ri->eIDAuth();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 GenerateBeAuthedData();
+
+			 textBoxAuthed->Text = strRandom;
+
+			 FormatShow(EID_AUTH_TITLE, OP_SUCCESS);
+		 }
+
+
+
 private: System::Int64 InitTransform(bool transformtype, Object^ obj){
 
 			 Int64 sum = 0;
@@ -1321,6 +1361,18 @@ private: System::Void GenerateRandom(){
 
 		 }
 
+
+private: System::Void GenerateBeAuthedData(){
+
+			 array<byte>^ byRandom = gcnew array<byte>(8);
+			 strRandom = "";
+			 random->GetBytes(byRandom);
+			 for(int i = 0; i < 8; i ++){
+				 strRandom += Convert::ToString(byRandom[i] % 10, 10);
+			 }
+
+		 }
+
 private: System::Void FormatShow(String^ title, String^ msg){
 
 			 String^ str = gcnew String("");
@@ -1345,7 +1397,6 @@ private: System::Void ShowMsg(String^ msg){
 
 private: System::Void Button_Control(bool status){
 			 if(status){
-				 this->btnAuth->Enabled = true;
 
 				 this->btnBanlance->Enabled = true;
 				 this->btnBeAuthData->Enabled = true;
@@ -1362,7 +1413,6 @@ private: System::Void Button_Control(bool status){
 
 
 			 }else{
-				 this->btnAuth->Enabled = false;
 
 				 this->btnBanlance->Enabled = false;
 				 this->btnBeAuthData->Enabled = false;
@@ -1381,6 +1431,7 @@ private: System::Void Button_Control(bool status){
 			 }
 
 		 }
+
 
 };
 
