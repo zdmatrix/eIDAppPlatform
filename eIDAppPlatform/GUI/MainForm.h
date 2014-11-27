@@ -34,8 +34,10 @@ namespace GUI {
 	{
 	public:
 
-		const static Int32 SW = 0x00;
-		const static Int32 DATA = 0x01;
+		const static Int64 GET_BANLANCE_ERR = -1;
+		const static Int64 OP_FAILED = -1;
+		const static Int64 SUCCESSED = 0;
+
 		const static Int64 OPERATION_SUCCESS = 0x9000;
 
 		const static bool ENABLE_ALL_BUTTON = true;
@@ -43,12 +45,34 @@ namespace GUI {
 		const static bool OPEN_READER = true;
 		const static bool CLOSE_READER = false;
 
+		const static bool INCREASE = true;
+		const static bool DECREASE = false;
+
 		static String^ OP_SUCCESS = gcnew String("Operation Success");
 
-		static String^ RECHARGE_TOO_MUCH = gcnew String("Recharge too Much!\r\nDo not Over 1000");
-		static String^ EXPENSE_TOO_MUCH = gcnew String("Expense too Much!\r\nDo not Over Banlance");
-		static String^ TRANSFORM_TOO_MUCH = gcnew String("Transform too Much!\r\nDo not Over Banlance");
+		static String^ OVER_UPPER_LIMIT = gcnew String("Transform too Much!\r\nDo not Over 1000");
+		static String^ OVER_LOWER_LIMIT = gcnew String("Transform too Much!\r\nNot Enough Banlance");
+
+		static String^ TRANSFORM_HINT_MSG = gcnew String("请确认卡上显示的信息与输入的信息是否一致" + Environment::NewLine
+							 + "若一致请按下卡上按钮确认");
+
+		static String^ CONFIRM_AUTH_CODE = gcnew String("请确认卡上显示的认证码与界面上显示的认证码是否一致" + Environment::NewLine
+			+ "若一致请按下卡上按钮确认");
+
+		static String^ CONFIRM_CHANGLLENGE_CODE = gcnew String("请确认卡上显示的挑战码与界面上显示的挑战码是否一致" + Environment::NewLine
+			+ "若一致请按下卡上按钮确认并产生应答码");
+
+		static String^ CONFIRM_RESPONSE_CODE = gcnew String("请确认卡上显示的应答码与界面上显示的应答码是否一致" + Environment::NewLine
+			+ "若一致请按下界面上的“登录”按钮登录");
+
+		static String^ EXPENSE_TITILE = gcnew String("eCash-消费");
+		static String^ RECHARGE_TITLE = gcnew String("eCash-充值");
+		static String^ GET_BANLANCE_TITLE = gcnew String("读卡余额");
+		static String^ NEW_KEY_TITLE = gcnew String("模拟转账演示");
+		static String^ OTP_TITLE = gcnew String("OTP功能演示");
+
 		static String^ NO_INPUT = gcnew String("Please Enter a Value");
+
 		static String^ SOURCE_ACCOUNT = gcnew String("0123456789");
 		static String^ DESTINATION_ACCOUNT = gcnew String("9876543210");
 		static String^ TRANSFORM_SUCCESSED = gcnew String("Transform Successed");
@@ -67,6 +91,7 @@ namespace GUI {
 
 		String^ strSelectedReader;
 		String^ strRandom;
+		String^ strInput;
 
 		RandomNumberGenerator^ random;
 
@@ -94,6 +119,7 @@ namespace GUI {
 
 			strSelectedReader = nullptr;
 			strRandom = nullptr;
+			strInput = nullptr;
 
 			USBGUID = gcnew Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
@@ -729,9 +755,9 @@ protected:
 			// 
 			// pictureBoxOTP
 			// 
-			this->pictureBoxOTP->Location = System::Drawing::Point(6, 175);
+			this->pictureBoxOTP->Location = System::Drawing::Point(0, 169);
 			this->pictureBoxOTP->Name = L"pictureBoxOTP";
-			this->pictureBoxOTP->Size = System::Drawing::Size(414, 218);
+			this->pictureBoxOTP->Size = System::Drawing::Size(426, 176);
 			this->pictureBoxOTP->TabIndex = 15;
 			this->pictureBoxOTP->TabStop = false;
 			// 
@@ -743,6 +769,7 @@ protected:
 			this->btnLogIn->TabIndex = 14;
 			this->btnLogIn->Text = L"登录";
 			this->btnLogIn->UseVisualStyleBackColor = true;
+			this->btnLogIn->Click += gcnew System::EventHandler(this, &MainForm::btnLogIn_Click);
 			// 
 			// textBoxResponCode
 			// 
@@ -785,6 +812,7 @@ protected:
 			this->btnChallengeCode->TabIndex = 5;
 			this->btnChallengeCode->Text = L"生成挑战码";
 			this->btnChallengeCode->UseVisualStyleBackColor = true;
+			this->btnChallengeCode->Click += gcnew System::EventHandler(this, &MainForm::btnChallengeCode_Click);
 			// 
 			// tabPageeID
 			// 
@@ -1021,7 +1049,7 @@ private: System::Void btnGetRandom_Click(System::Object^  sender, System::EventA
 				MessageBox::Show(ri->strResponseSW);
 				return;
 			}
-			FormatShow(btnGetRandom, ri->strResponseData);			 
+			FormatShow("卡测试-读随机数", ri->strResponseData);			 
 		 }
 
 
@@ -1040,164 +1068,89 @@ private: System::Void btnDisOnCard_Click(System::Object^  sender, System::EventA
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
 			 }
-			 FormatShow(btnDisOnCard, OP_SUCCESS);
+			 FormatShow("卡测试-在卡上显示数据", OP_SUCCESS);
 		 }
 
 
 private: System::Void btnRecharge_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 String^ recharge = gcnew String("");
-			 
 			 nBtnClick ++;
 
-			 lRet = ri->SelecteIDApplet();
+			 if(InitTransform(INCREASE, textBoxRecharge)){
+				 return;
+			 }
+
+			 lRet = ri->DisPlayOnCard(strInput, ri->DIS_NOTHING_ON_LINE);
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
 			 }
 
-			 
-			 lRet = ri->GetBanlance();
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
-				 return;
-			 }
-			
-			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
-			
-
-			 if(textBoxRecharge->Text->ToString()->Equals("")){
-				 MessageBox::Show(NO_INPUT);
-				 return;
-			 }
-			 recharge = textBoxRecharge->Text->ToString();
-			 Int64 tmp = nBanlance + Convert::ToInt32(recharge, 10);
-			 if(tmp > 1000){
-				 MessageBox::Show(RECHARGE_TOO_MUCH);
+			 if(ConfirmTransform(TRANSFORM_HINT_MSG, ri->DIS_NOCHANGE, nBanlance.ToString())){
 				 return;
 			 }
 
-			 lRet = ri->UpdateBinFile(tmp.ToString("X8"));
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
-				 return;
-			 }
-			 FormatShow(btnRecharge, OP_SUCCESS);
+			 FormatShow(RECHARGE_TITLE, OP_SUCCESS);
+
 		 }
 
 
 private: System::Void btnExpense_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 String^ expense = gcnew String("");
-
 			 nBtnClick ++;
+			 
+			 if(InitTransform(DECREASE, textBoxExpense)){
+				 return;
+			 }
 
-			 lRet = ri->SelecteIDApplet();
+			 lRet = ri->DisPlayOnCard(strInput, ri->DIS_NOTHING_ON_LINE);
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
 			 }
 
-
-			 lRet = ri->GetBanlance();
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
+			 if(ConfirmTransform(TRANSFORM_HINT_MSG, ri->DIS_NOCHANGE, nBanlance.ToString())){
 				 return;
 			 }
 
-			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
+			 FormatShow(EXPENSE_TITILE, OP_SUCCESS);
 
-
-			 if(textBoxExpense->Text->ToString()->Equals("")){
-				 MessageBox::Show(NO_INPUT);
-				 return;
-			 }
-			 expense = textBoxExpense->Text->ToString();
-			 Int64 tmp = nBanlance - Convert::ToInt32(expense, 10);
-			 if(tmp < 0){
-				 MessageBox::Show(EXPENSE_TOO_MUCH);
-				 return;
-			 }
-
-			 lRet = ri->UpdateBinFile(tmp.ToString("X8"));
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
-				 return;
-			 }
-			 FormatShow(btnExpense, OP_SUCCESS);
 		 }
 
 private: System::Void btnBanlance_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			nBtnClick ++;
-			 
-			lRet = ri->GetBanlance();
-			if(lRet != OPERATION_SUCCESS){
-				MessageBox::Show(ri->strResponseSW);
+			
+			nBanlance = GetCardBanlance();
+			if(nBanlance == GET_BANLANCE_ERR){
 				return;
 			}
-			textBoxBanlance->Text = Convert::ToUInt32(ri->strResponseData, 16).ToString();
-			FormatShow(btnBanlance, OP_SUCCESS);
+
+			textBoxBanlance->Text = nBanlance.ToString();
+
+			FormatShow(GET_BANLANCE_TITLE, OP_SUCCESS);
 		 }
 
 
 private: System::Void btnSendToCard_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 String^ transform = gcnew String("");
-
 			 nBtnClick ++;
 
-			 lRet = ri->SelecteIDApplet();
+			 if(InitTransform(DECREASE, textBoxTransform)){
+				 return;
+			 }
+
+			 lRet = ri->DisPlayOnCard(textBoxSrcAccount->Text->ToString()->Substring(4, 6), strInput);
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
 			 }
 
-
-			 lRet = ri->GetBanlance();
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
-				 return;
-			 }
-
-			 nBanlance = Convert::ToInt32(ri->strResponseData, 16);
-
-
-			 if(textBoxTransform->Text->ToString()->Equals("")){
-				 MessageBox::Show(NO_INPUT);
-				 return;
-			 }
-			 transform = textBoxTransform->Text->ToString();
-			 Int64 tmp = nBanlance - Convert::ToInt32(transform, 10);
-			 if(tmp < 0){
-				 MessageBox::Show(TRANSFORM_TOO_MUCH);
-				 return;
-			 }
-
-			 lRet = ri->DisPlayOnCard(textBoxSrcAccount->Text->ToString()->Substring(4, 6), transform);
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
-				 return;
-			 }
-
-			 MessageBox::Show("请确认卡上显示的目的账户与转账金额与输入的是否相同" + Environment::NewLine
-				 + "若一致请按下卡上按钮生成认证码");
-
-			
-			 lRet = ri->WaitCardButtonPushed();
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
-				 return;
-			 }
-			
 			 GenerateRandom();
 
-			 lRet = ri->DisPlayOnCard(transform, strRandom);
-			 if(lRet != OPERATION_SUCCESS){
-				 MessageBox::Show(ri->strResponseSW);
+			 if(ConfirmTransform(TRANSFORM_HINT_MSG, strInput, strRandom)){
 				 return;
 			 }
-
 
 			 LPBYTE lpbySrcAccount = dt->getImageData(textBoxSrcAccount->Text);
 			 LPBYTE lpbyDstAccount = dt->getImageData(textBoxDstAccount->Text);
@@ -1208,8 +1161,26 @@ private: System::Void btnSendToCard_Click(System::Object^  sender, System::Event
 			 DisImage(lpbyTransform, pictureBoxTransform);
 			 DisImage(lpbyAuthCode, pictureBoxAuthCode);
 
-			 MessageBox::Show("请确认卡上显示的转账金额与认证码和软件界面中显示的是否相同" + Environment::NewLine
-				 + "若一致请按下卡上按钮确认交易");
+			 if(ConfirmTransform(CONFIRM_AUTH_CODE, strInput, nBanlance.ToString())){
+				 return;
+			 }
+
+			 FormatShow(GET_BANLANCE_TITLE, OP_SUCCESS);
+		 }
+
+
+private: System::Void btnChallengeCode_Click(System::Object^  sender, System::EventArgs^  e) {
+		 
+			 GenerateRandom();
+			 textBoxChallengeCode->Text = strRandom;
+
+			 lRet = ri->DisPlayOnCard(strRandom, ri->DIS_NOTHING_ON_LINE);
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return;
+			 }
+
+			 MessageBox::Show(CONFIRM_CHANGLLENGE_CODE);
 
 			 lRet = ri->WaitCardButtonPushed();
 			 if(lRet != OPERATION_SUCCESS){
@@ -1217,15 +1188,108 @@ private: System::Void btnSendToCard_Click(System::Object^  sender, System::Event
 				 return;
 			 }
 
-			 lRet = ri->UpdateBinFile(tmp.ToString("X8"));
+			 GenerateRandom();
+			 lRet = ri->DisPlayOnCard(textBoxChallengeCode->Text->ToString(), strRandom);
+			 textBoxResponCode->Text = strRandom;
 			 if(lRet != OPERATION_SUCCESS){
 				 MessageBox::Show(ri->strResponseSW);
 				 return;
 			 }
 
-			 FormatShow(btnSendToCard, OP_SUCCESS);
-			 ShowMsg(TRANSFORM_SUCCESSED);
+			 MessageBox::Show(CONFIRM_RESPONSE_CODE);
+		 
 		 }
+
+
+
+private: System::Int64 GetCardBanlance(){
+
+			 lRet = ri->SelecteIDApplet();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return GET_BANLANCE_ERR;
+			 }
+
+			 lRet = ri->GetBanlance();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return GET_BANLANCE_ERR;
+			 }
+
+			 return Convert::ToUInt32(ri->strResponseData, 16);
+		 }
+
+
+private: System::Void btnLogIn_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 FormatShow(OTP_TITLE, OP_SUCCESS);
+		 }
+
+
+private: System::Int64 InitTransform(bool transformtype, Object^ obj){
+
+			 Int64 sum = 0;
+			 strInput = nullptr;
+			 TextBox^ tb = (TextBox^)obj;
+
+			 nBanlance = GetCardBanlance();
+			 if(nBanlance == GET_BANLANCE_ERR){
+				 return OP_FAILED;
+			 }
+
+			 strInput = tb->Text->ToString();
+			 if(strInput->Equals("")){
+				 MessageBox::Show(NO_INPUT);
+				 return OP_FAILED;
+			 }
+
+			 int transform = Convert::ToInt32(strInput, 10);
+
+			 if(transformtype){
+				 sum = nBanlance + transform;
+				 if(sum > 1000){
+					 MessageBox::Show(OVER_UPPER_LIMIT);
+					 return OP_FAILED;
+				 }
+				 nBanlance += transform;
+			 }else{
+				 sum = nBanlance - transform;
+				 if(sum < 0){
+					 MessageBox::Show(OVER_LOWER_LIMIT);
+					 return OP_FAILED;
+				 }
+				 nBanlance -= transform;
+			 }
+
+			 return SUCCESSED;
+		 }
+
+
+private: System::Int64 ConfirmTransform(String^ msg, String^ line1, String^ line2){
+
+			 MessageBox::Show(msg);
+
+			 lRet = ri->WaitCardButtonPushed();
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return OP_FAILED;
+			 }
+
+			 lRet = ri->DisPlayOnCard(line1, line2);
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return OP_FAILED;
+			 }
+
+			 lRet = ri->UpdateBinFile(nBanlance.ToString("X8"));
+			 if(lRet != OPERATION_SUCCESS){
+				 MessageBox::Show(ri->strResponseSW);
+				 return OP_FAILED;
+			 }
+
+			 return SUCCESSED;
+		 }
+
 
 
 private: System::Void DisImage(LPBYTE lpbyNum, PictureBox^ picbox){
@@ -1257,12 +1321,11 @@ private: System::Void GenerateRandom(){
 
 		 }
 
-private: System::Void FormatShow(Object^ obj, String^ msg){
+private: System::Void FormatShow(String^ title, String^ msg){
 
 			 String^ str = gcnew String("");
-			 Button^ btn = (Button^)obj;
 			 str = String::Format("{0, -4:D4}", nBtnClick);
-			 str += String::Format("{0, -20}", "#" + btn->Text->ToString() + ": " + Environment::NewLine);
+			 str += String::Format("{0, -20}", "#" + title + ": " + Environment::NewLine);
 			 str += String::Format("{0, -30}", msg + Environment::NewLine);
 			 this->textBoxShow->AppendText(str  + Environment::NewLine);
 			 this->textBoxShow->ScrollToCaret();
@@ -1318,7 +1381,6 @@ private: System::Void Button_Control(bool status){
 			 }
 
 		 }
-
 
 };
 
